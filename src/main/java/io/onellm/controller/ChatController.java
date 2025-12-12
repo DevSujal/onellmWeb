@@ -1,12 +1,13 @@
 package io.onellm.controller;
 
-import io.onellm.OneLLM;
+import io.onellm.core.LLMProvider;
 import io.onellm.core.LLMRequest;
 import io.onellm.core.LLMResponse;
 import io.onellm.core.Message;
 import io.onellm.dto.ChatCompletionRequest;
 import io.onellm.dto.ChatCompletionResponse;
 import io.onellm.dto.MessageDTO;
+import io.onellm.service.ProviderFactory;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,11 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for chat completions.
  * Provides endpoints for synchronous and streaming LLM completions.
+ * 
+ * Users must provide their own API keys in each request.
  */
 @RestController
 @RequestMapping("/api")
@@ -34,16 +36,18 @@ public class ChatController {
     
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
     
-    private final OneLLM oneLLM;
+    private final ProviderFactory providerFactory;
     private final ExecutorService streamExecutor = Executors.newCachedThreadPool();
     
-    public ChatController(OneLLM oneLLM) {
-        this.oneLLM = oneLLM;
+    public ChatController(ProviderFactory providerFactory) {
+        this.providerFactory = providerFactory;
     }
     
     /**
      * Synchronous chat completion endpoint.
      * POST /api/chat/completions
+     * 
+     * Requires user to provide their API key in the request body.
      */
     @PostMapping("/chat/completions")
     public ResponseEntity<ChatCompletionResponse> chatCompletion(
@@ -51,8 +55,19 @@ public class ChatController {
         
         logger.info("Chat completion request for model: {}", request.getModel());
         
+        // Create provider with user's API key
+        LLMProvider provider = providerFactory.createProvider(
+                request.getModel(),
+                request.getApiKey(),
+                request.getBaseUrl(),
+                request.getAzureResourceName(),
+                request.getAzureDeploymentName(),
+                request.getOpenRouterSiteName(),
+                request.getOpenRouterSiteUrl()
+        );
+        
         LLMRequest llmRequest = buildLLMRequest(request);
-        LLMResponse response = oneLLM.complete(llmRequest);
+        LLMResponse response = provider.complete(llmRequest);
         
         return ResponseEntity.ok(ChatCompletionResponse.fromLLMResponse(response));
     }
@@ -60,6 +75,8 @@ public class ChatController {
     /**
      * Streaming chat completion endpoint using Server-Sent Events.
      * POST /api/chat/completions/stream
+     * 
+     * Requires user to provide their API key in the request body.
      */
     @PostMapping(value = "/chat/completions/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamChatCompletion(
@@ -71,9 +88,20 @@ public class ChatController {
         
         streamExecutor.execute(() -> {
             try {
+                // Create provider with user's API key
+                LLMProvider provider = providerFactory.createProvider(
+                        request.getModel(),
+                        request.getApiKey(),
+                        request.getBaseUrl(),
+                        request.getAzureResourceName(),
+                        request.getAzureDeploymentName(),
+                        request.getOpenRouterSiteName(),
+                        request.getOpenRouterSiteUrl()
+                );
+                
                 LLMRequest llmRequest = buildLLMRequest(request);
                 
-                oneLLM.streamComplete(llmRequest, new io.onellm.core.StreamHandler() {
+                provider.streamComplete(llmRequest, new io.onellm.core.StreamHandler() {
                     @Override
                     public void onChunk(String chunk) {
                         try {
@@ -115,12 +143,12 @@ public class ChatController {
     }
     
     /**
-     * List all configured providers.
+     * List all supported providers.
      * GET /api/providers
      */
     @GetMapping("/providers")
     public ResponseEntity<Map<String, Object>> listProviders() {
-        List<String> providers = oneLLM.listProviders();
+        List<String> providers = providerFactory.getSupportedProviders();
         
         Map<String, Object> response = new HashMap<>();
         response.put("providers", providers);

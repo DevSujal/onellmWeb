@@ -10,6 +10,9 @@ import java.util.List;
  */
 public class ChatCompletionRequest {
     
+    @NotBlank(message = "API key is required")
+    private String apiKey;
+    
     @NotBlank(message = "Model is required")
     private String model;
     
@@ -24,6 +27,13 @@ public class ChatCompletionRequest {
     private Double presencePenalty;
     private List<String> stop;
     private Boolean stream;
+    
+    // Provider-specific optional fields
+    private String baseUrl;  // Custom base URL (for OpenAI-compatible endpoints)
+    private String azureResourceName;  // Required for Azure
+    private String azureDeploymentName;  // Required for Azure
+    private String openRouterSiteName;  // Optional for OpenRouter
+    private String openRouterSiteUrl;  // Optional for OpenRouter
     
     // Getters and Setters
     public String getModel() { return model; }
@@ -52,4 +62,22 @@ public class ChatCompletionRequest {
     
     public Boolean getStream() { return stream; }
     public void setStream(Boolean stream) { this.stream = stream; }
+    
+    public String getApiKey() { return apiKey; }
+    public void setApiKey(String apiKey) { this.apiKey = apiKey; }
+    
+    public String getBaseUrl() { return baseUrl; }
+    public void setBaseUrl(String baseUrl) { this.baseUrl = baseUrl; }
+    
+    public String getAzureResourceName() { return azureResourceName; }
+    public void setAzureResourceName(String azureResourceName) { this.azureResourceName = azureResourceName; }
+    
+    public String getAzureDeploymentName() { return azureDeploymentName; }
+    public void setAzureDeploymentName(String azureDeploymentName) { this.azureDeploymentName = azureDeploymentName; }
+    
+    public String getOpenRouterSiteName() { return openRouterSiteName; }
+    public void setOpenRouterSiteName(String openRouterSiteName) { this.openRouterSiteName = openRouterSiteName; }
+    
+    public String getOpenRouterSiteUrl() { return openRouterSiteUrl; }
+    public void setOpenRouterSiteUrl(String openRouterSiteUrl) { this.openRouterSiteUrl = openRouterSiteUrl; }
 }

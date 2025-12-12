@@ -1,287 +1,491 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Java-17%2B-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java 17+"/>
-  <img src="https://img.shields.io/badge/Spring%20Boot-3.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white" alt="Spring Boot 3.2"/>
-  <img src="https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white" alt="Maven"/>
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License"/>
-  <img src="https://img.shields.io/badge/Providers-10-blue?style=for-the-badge" alt="10 Providers"/>
+  <img src="https://raw.githubusercontent.com/onellm/onellm-java/main/assets/logo.png" alt="OneLLM Logo" width="180"/>
 </p>
 
 <h1 align="center">🚀 OneLLM</h1>
 
 <p align="center">
-  <strong>One SDK. Any LLM. Zero Hassle.</strong>
-  <br/>
-  <em>A unified Java SDK & REST API to call 10+ LLM providers with a single interface</em>
+  <strong>One Interface. Ten Providers. Your API Keys.</strong>
+</p>
+
+<p align="center">
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-providers">Providers</a> •
+  <a href="#-rest-api">REST API</a> •
+  <a href="#-sdk-usage">SDK Usage</a> •
+  <a href="#-configuration">Configuration</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Java-17+-blue?style=for-the-badge&logo=openjdk" alt="Java 17+"/>
+  <img src="https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen?style=for-the-badge&logo=springboot" alt="Spring Boot 3.2.0"/>
+  <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="MIT License"/>
+  <img src="https://img.shields.io/badge/BYOK-Bring%20Your%20Own%20Key-orange?style=for-the-badge" alt="BYOK"/>
 </p>
 
 ---
 
-## ✨ Why OneLLM?
+**OneLLM** is a unified Java SDK and REST API that provides a single interface for calling **10 different LLM providers**. Users bring their own API keys — just specify the model name and your API key, and OneLLM automatically routes your request to the right provider.
 
-Tired of managing different SDKs for each LLM provider? OneLLM solves this by providing:
+> 🔑 **Bring Your Own Key (BYOK)**: OneLLM doesn't store or require server-side API keys. Users provide their own API keys in each request, making it perfect for multi-tenant applications.
 
-- 🔌 **Single Interface**: One API for OpenAI, Anthropic, Google, and 7 more providers
-- 🌐 **REST API**: Deploy as a Spring Boot microservice with instant HTTP access
-- 🎯 **Auto-Routing**: Just specify the model name — we find the right provider
-- ⚡ **Streaming**: Real-time token streaming (SSE for REST, callbacks for SDK)  
-- 🔄 **Async Support**: Non-blocking calls with `CompletableFuture`
-- 🛡️ **Resilient**: Built-in retry logic with exponential backoff
-- 🪶 **Production Ready**: Spring Boot 3.2 with configuration via environment variables
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔌 **10 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, and GitHub Copilot |
+| 🔑 **BYOK Model** | Users provide their own API keys — no server-side credential storage |
+| 🎯 **Auto-Routing** | Automatically routes requests based on model name |
+| 🌊 **Streaming** | Full support for streaming responses via SSE |
+| ⚡ **Async** | Non-blocking async completions with `CompletableFuture` |
+| 🛡️ **Type-Safe** | Builder pattern with validation for all request parameters |
+| 📊 **Usage Tracking** | Token usage and latency metrics in every response |
 
 ---
 
-## 🚀 Two Ways to Use OneLLM
+## 🚀 Quick Start
 
-### Option 1: REST API (Spring Boot)
+### Prerequisites
 
-Deploy OneLLM as a microservice and call it via HTTP from any language.
+- Java 17 or higher
+- Maven 3.6+
+
+### Run the Server
 
 ```bash
-# Start the server
-mvn spring-boot:run
+# Clone and build
+git clone https://github.com/onellm/onellm-java.git
+cd onellm
 
-# Call the API
+# Run (no API keys needed - users provide their own!)
+mvn spring-boot:run
+```
+
+The server starts at `http://localhost:8080`
+
+### Make Your First Request
+
+```bash
 curl -X POST http://localhost:8080/api/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
+    "apiKey": "YOUR_OPENAI_API_KEY",
     "model": "gpt-4",
     "messages": [{"role": "user", "content": "Hello!"}]
   }'
 ```
 
-### Option 2: Java SDK
+> **Note**: Replace `YOUR_OPENAI_API_KEY` with your actual API key from the respective provider.
 
-Use OneLLM directly in your Java application.
+---
 
-```java
-OneLLM llm = OneLLM.builder()
-    .openai("sk-...")
-    .anthropic("sk-ant-...")
-    .build();
+## 🔌 Providers
 
-LLMResponse response = llm.complete(
-    LLMRequest.builder()
-        .model("gpt-4")
-        .user("Hello!")
-        .build()
-);
+OneLLM supports **10 LLM providers** out of the box:
+
+| Provider | Models | Required Fields |
+|----------|--------|-----------------|
+| **OpenAI** | `gpt-4`, `gpt-4-turbo`, `gpt-4o`, `gpt-3.5-turbo`, `o1`, `o3`, `chatgpt-*` | `apiKey` |
+| **Anthropic** | `claude-3-opus`, `claude-3-sonnet`, `claude-3-haiku`, `claude-3.5-sonnet`, `claude-4-*` | `apiKey` |
+| **Google Gemini** | `gemini-pro`, `gemini-ultra`, `gemini-1.5-pro`, `gemini-2.0-flash` | `apiKey` |
+| **Azure OpenAI** | Your deployed models | `apiKey`, `azureResourceName`, `azureDeploymentName` |
+| **Groq** | `llama-3`, `mixtral`, `gemma` | `apiKey` |
+| **Cerebras** | `cerebras-gpt` variants | `apiKey` |
+| **Ollama** | Any local model | `baseUrl` (optional, defaults to localhost) |
+| **OpenRouter** | 100+ models | `apiKey`, optionally `openRouterSiteName`, `openRouterSiteUrl` |
+| **xAI** | `grok-*` models | `apiKey` |
+| **GitHub Copilot** | Copilot models | `apiKey` |
+
+### Model Auto-Detection
+
+OneLLM automatically routes to the correct provider based on model name:
+
+```
+"gpt-4"           → OpenAI
+"claude-3-opus"   → Anthropic
+"gemini-1.5-pro"  → Google
+"llama-3-70b"     → Groq
+"grok-1"          → xAI
+```
+
+You can also use explicit provider prefixes:
+
+```
+"openai/gpt-4"
+"anthropic/claude-3-opus"
+"google/gemini-pro"
+"azure/my-deployment"
 ```
 
 ---
 
-## 🌐 REST API Reference
+## 🌐 REST API
+
+### Base URL
+
+```
+http://localhost:8080/api
+```
 
 ### Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/chat/completions` | POST | Synchronous chat completion |
-| `/api/chat/completions/stream` | POST | Streaming via Server-Sent Events |
-| `/api/providers` | GET | List configured providers |
-| `/api/health` | GET | Health check |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/chat/completions` | Synchronous chat completion |
+| `POST` | `/chat/completions/stream` | Streaming chat completion (SSE) |
+| `GET` | `/providers` | List supported providers |
+| `GET` | `/health` | Health check |
 
-### Chat Completion Request
+---
+
+### `POST /api/chat/completions`
+
+Send a chat completion request with your own API key.
+
+**Request Body:**
 
 ```json
-POST /api/chat/completions
-Content-Type: application/json
-
 {
+  "apiKey": "sk-your-api-key-here",
   "model": "gpt-4",
   "messages": [
-    {"role": "system", "content": "You are a helpful assistant."},
-    {"role": "user", "content": "What is Java?"}
+    { "role": "system", "content": "You are a helpful assistant." },
+    { "role": "user", "content": "Hello, who are you?" }
   ],
   "temperature": 0.7,
-  "maxTokens": 1000
+  "maxTokens": 1000,
+  "topP": 0.9,
+  "frequencyPenalty": 0.0,
+  "presencePenalty": 0.0,
+  "stop": ["END"],
+  "stream": false,
+  
+  "baseUrl": "https://custom-endpoint.com/v1",
+  "azureResourceName": "my-resource",
+  "azureDeploymentName": "gpt-4",
+  "openRouterSiteName": "MyApp",
+  "openRouterSiteUrl": "https://myapp.com"
 }
 ```
 
-### Chat Completion Response
+**Request Attributes:**
+
+| Field | Type | Required | Description | Valid Range |
+|-------|------|----------|-------------|-------------|
+| `apiKey` | `string` | ✅ **Yes** | Your API key for the provider | - |
+| `model` | `string` | ✅ **Yes** | Model identifier (routes to provider automatically) | - |
+| `messages` | `array` | ✅ **Yes** | Array of message objects | Min 1 message |
+| `messages[].role` | `string` | ✅ **Yes** | Role: `system`, `user`, or `assistant` | - |
+| `messages[].content` | `string` | ✅ **Yes** | Message content | - |
+| `temperature` | `number` | ❌ No | Sampling temperature | `0.0` - `2.0` |
+| `maxTokens` | `integer` | ❌ No | Maximum tokens to generate | `≥ 1` |
+| `topP` | `number` | ❌ No | Nucleus sampling probability | `0.0` - `1.0` |
+| `frequencyPenalty` | `number` | ❌ No | Frequency penalty | `-2.0` - `2.0` |
+| `presencePenalty` | `number` | ❌ No | Presence penalty | `-2.0` - `2.0` |
+| `stop` | `array` | ❌ No | Stop sequences | - |
+| `stream` | `boolean` | ❌ No | Enable streaming | - |
+
+**Provider-Specific Fields:**
+
+| Field | Type | Required For | Description |
+|-------|------|--------------|-------------|
+| `baseUrl` | `string` | Optional | Custom base URL (OpenAI-compatible endpoints) |
+| `azureResourceName` | `string` | Azure | Your Azure resource name |
+| `azureDeploymentName` | `string` | Azure | Your Azure deployment name |
+| `openRouterSiteName` | `string` | Optional | Your app name (for OpenRouter) |
+| `openRouterSiteUrl` | `string` | Optional | Your app URL (for OpenRouter) |
+
+**Response:**
 
 ```json
 {
-  "id": "chatcmpl-...",
-  "model": "gpt-4",
-  "content": "Java is a high-level, object-oriented programming language...",
+  "id": "chatcmpl-abc123",
+  "model": "gpt-4-0613",
+  "content": "Hello! I'm an AI assistant powered by GPT-4...",
   "finishReason": "stop",
   "provider": "openai",
   "latencyMs": 1234,
   "usage": {
     "promptTokens": 25,
-    "completionTokens": 150,
-    "totalTokens": 175
+    "completionTokens": 45,
+    "totalTokens": 70
   }
 }
 ```
 
-### Streaming (Server-Sent Events)
+---
+
+### `POST /api/chat/completions/stream`
+
+Stream responses using Server-Sent Events (SSE).
+
+**Request:** Same as `/chat/completions`
+
+**Response:** SSE stream with events:
+
+```
+event: chunk
+data: {"content": "Hello"}
+
+event: chunk
+data: {"content": ", I'm"}
+
+event: complete
+data: {"id": "...", "model": "gpt-4", "content": "Hello, I'm...", ...}
+```
+
+---
+
+### `GET /api/providers`
+
+List all supported providers.
+
+**Response:**
+
+```json
+{
+  "providers": ["openai", "anthropic", "google", "azure", "groq", "cerebras", "ollama", "openrouter", "xai", "copilot"],
+  "count": 10
+}
+```
+
+---
+
+### `GET /api/health`
+
+Health check endpoint.
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "service": "OneLLM"
+}
+```
+
+---
+
+## 📝 API Examples
+
+### OpenAI (GPT-4)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "sk-your-openai-key",
+    "model": "gpt-4",
+    "messages": [
+      {"role": "system", "content": "You are a helpful coding assistant."},
+      {"role": "user", "content": "Write a Python function to reverse a string."}
+    ],
+    "temperature": 0.5,
+    "maxTokens": 500
+  }'
+```
+
+### Anthropic (Claude)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "sk-ant-your-anthropic-key",
+    "model": "claude-3-opus",
+    "messages": [
+      {"role": "user", "content": "Explain quantum computing in simple terms."}
+    ],
+    "maxTokens": 1000
+  }'
+```
+
+### Google Gemini
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "AIza-your-google-key",
+    "model": "gemini-1.5-pro",
+    "messages": [
+      {"role": "user", "content": "What is the meaning of life?"}
+    ]
+  }'
+```
+
+### Azure OpenAI
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "your-azure-api-key",
+    "model": "azure/my-gpt4-deployment",
+    "azureResourceName": "my-azure-resource",
+    "azureDeploymentName": "my-gpt4-deployment",
+    "messages": [
+      {"role": "user", "content": "Hello from Azure!"}
+    ]
+  }'
+```
+
+### Groq (Fast Inference)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "gsk_your-groq-key",
+    "model": "llama-3-70b",
+    "messages": [
+      {"role": "user", "content": "Write a haiku about coding."}
+    ]
+  }'
+```
+
+### OpenRouter (100+ Models)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "sk-or-your-openrouter-key",
+    "model": "openrouter/anthropic/claude-3-opus",
+    "openRouterSiteName": "MyApp",
+    "openRouterSiteUrl": "https://myapp.com",
+    "messages": [
+      {"role": "user", "content": "Hello via OpenRouter!"}
+    ]
+  }'
+```
+
+### xAI (Grok)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "xai-your-xai-key",
+    "model": "grok-1",
+    "messages": [
+      {"role": "user", "content": "Tell me a joke."}
+    ]
+  }'
+```
+
+### Ollama (Local Models)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "not-required",
+    "model": "ollama/llama2",
+    "baseUrl": "http://localhost:11434",
+    "messages": [
+      {"role": "user", "content": "Hello from local Ollama!"}
+    ]
+  }'
+```
+
+### Streaming Example
 
 ```bash
 curl -X POST http://localhost:8080/api/chat/completions/stream \
   -H "Content-Type: application/json" \
-  -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Write a poem"}]}'
-```
-
-Response stream:
-```
-event: chunk
-data: {"content": "In "}
-
-event: chunk
-data: {"content": "the "}
-
-event: chunk
-data: {"content": "realm "}
-
-event: complete
-data: {"id": "...", "model": "gpt-4", "content": "In the realm...", ...}
+  -d '{
+    "apiKey": "sk-your-openai-key",
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Count from 1 to 10 slowly."}]
+  }'
 ```
 
 ---
 
-## ⚙️ Configuration
+## 💻 JavaScript/TypeScript Client
 
-### Environment Variables
+```typescript
+// Basic request
+const response = await fetch('http://localhost:8080/api/chat/completions', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    apiKey: 'sk-your-api-key',
+    model: 'gpt-4',
+    messages: [
+      { role: 'user', content: 'Hello!' }
+    ]
+  })
+});
 
-Set API keys via environment variables:
+const data = await response.json();
+console.log(data.content);
 
-```bash
-# Windows
-set ONELLM_OPENAI_API_KEY=sk-...
-set ONELLM_ANTHROPIC_API_KEY=sk-ant-...
-set ONELLM_GOOGLE_API_KEY=AIza...
-set ONELLM_GROQ_API_KEY=gsk_...
+// Streaming request
+const eventSource = new EventSource('http://localhost:8080/api/chat/completions/stream', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    apiKey: 'sk-your-api-key',
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Write a story' }]
+  })
+});
 
-# Linux/Mac
-export ONELLM_OPENAI_API_KEY=sk-...
-export ONELLM_ANTHROPIC_API_KEY=sk-ant-...
-```
+eventSource.addEventListener('chunk', (e) => {
+  const data = JSON.parse(e.data);
+  process.stdout.write(data.content);
+});
 
-### application.properties
-
-```properties
-# Server
-server.port=8080
-
-# Providers (automatically enabled when API key is set)
-onellm.openai.api-key=${ONELLM_OPENAI_API_KEY:}
-onellm.anthropic.api-key=${ONELLM_ANTHROPIC_API_KEY:}
-onellm.google.api-key=${ONELLM_GOOGLE_API_KEY:}
-onellm.groq.api-key=${ONELLM_GROQ_API_KEY:}
-
-# Ollama (enabled by default for local development)
-onellm.ollama.enabled=true
-onellm.ollama.base-url=http://localhost:11434
-```
-
-### All Supported Environment Variables
-
-| Variable | Provider |
-|----------|----------|
-| `ONELLM_OPENAI_API_KEY` | OpenAI |
-| `ONELLM_ANTHROPIC_API_KEY` | Anthropic |
-| `ONELLM_GOOGLE_API_KEY` | Google Gemini |
-| `ONELLM_AZURE_API_KEY` | Azure OpenAI |
-| `ONELLM_GROQ_API_KEY` | Groq |
-| `ONELLM_CEREBRAS_API_KEY` | Cerebras |
-| `ONELLM_OPENROUTER_API_KEY` | OpenRouter |
-| `ONELLM_XAI_API_KEY` | xAI (Grok) |
-| `ONELLM_COPILOT_API_KEY` | GitHub Copilot |
-
----
-
-## 📦 Installation
-
-### Run as Spring Boot Application
-
-```bash
-git clone https://github.com/DevSujal/onellmWeb.git
-cd onellmWeb
-
-# Set your API keys
-export ONELLM_OPENAI_API_KEY=sk-...
-
-# Run
-mvn spring-boot:run
-```
-
-### Build Executable JAR
-
-```bash
-mvn clean package -DskipTests
-java -jar target/onellm-1.0.0.jar
-```
-
-### Use as Library (Maven)
-
-```xml
-<dependency>
-    <groupId>io.onellm</groupId>
-    <artifactId>onellm</artifactId>
-    <version>1.0.0</version>
-</dependency>
+eventSource.addEventListener('complete', (e) => {
+  console.log('\nDone!');
+  eventSource.close();
+});
 ```
 
 ---
 
-## 🔌 Supported Providers
+## 📦 SDK Usage
 
-| Provider | Status | Models | Auto-Route Prefixes |
-|----------|--------|--------|---------------------|
-| **OpenAI** | ✅ | GPT-4, GPT-4o, GPT-3.5, o1, o3 | `gpt-4`, `gpt-3.5`, `o1`, `o3` |
-| **Anthropic** | ✅ | Claude 3/4 Opus, Sonnet, Haiku | `claude-3`, `claude-4` |
-| **Google** | ✅ | Gemini Pro, Ultra, Flash | `gemini` |
-| **Azure OpenAI** | ✅ | Azure-hosted GPT models | `azure/` |
-| **Groq** | ✅ | LLaMA, Mixtral (fast inference) | `llama`, `mixtral`, `groq/` |
-| **Cerebras** | ✅ | LLaMA (ultra-fast inference) | `cerebras/` |
-| **Ollama** | ✅ | Any local model | `ollama/`, `local/` |
-| **OpenRouter** | ✅ | 100+ models from all providers | Any `org/model` format |
-| **xAI** | ✅ | Grok-1, Grok-2 | `grok`, `xai/` |
-| **Copilot** | ✅ | GitHub Copilot models | `copilot`, `github/` |
+Use OneLLM programmatically in your Java application:
 
----
-
-## 📚 SDK Quick Start
+### Basic Usage
 
 ```java
 import io.onellm.OneLLM;
-import io.onellm.core.LLMRequest;
-import io.onellm.core.LLMResponse;
+import io.onellm.core.*;
 
-public class QuickStart {
-    public static void main(String[] args) {
-        // 1. Build OneLLM with your API keys
-        OneLLM llm = OneLLM.builder()
-            .openai(System.getenv("OPENAI_API_KEY"))
-            .anthropic(System.getenv("ANTHROPIC_API_KEY"))
-            .google(System.getenv("GOOGLE_API_KEY"))
-            .build();
-        
-        // 2. Make a request - model name auto-routes to correct provider!
-        LLMResponse response = llm.complete(
-            LLMRequest.builder()
-                .model("gpt-4")           // → Routes to OpenAI
-                .user("What is Java?")
-                .build()
-        );
-        
-        // 3. Use the response
-        System.out.println(response.getContent());
-        System.out.println("Tokens: " + response.getUsage().getTotalTokens());
-        System.out.println("Latency: " + response.getLatencyMs() + "ms");
-    }
-}
+// Build the client with your API keys
+OneLLM llm = OneLLM.builder()
+    .openai("sk-your-openai-key")
+    .anthropic("sk-ant-your-anthropic-key")
+    .google("AIza-your-google-key")
+    .build();
+
+// Send a completion request
+LLMResponse response = llm.complete(
+    LLMRequest.builder()
+        .model("gpt-4")
+        .system("You are a helpful assistant.")
+        .user("Explain quantum computing in simple terms.")
+        .temperature(0.7)
+        .maxTokens(500)
+        .build()
+);
+
+System.out.println(response.getContent());
+System.out.println("Provider: " + response.getProvider());
+System.out.println("Latency: " + response.getLatencyMs() + "ms");
 ```
 
-### Streaming with SDK
+### Streaming
 
 ```java
 llm.streamComplete(
     LLMRequest.builder()
-        .model("gpt-4")
-        .user("Write a poem")
-        .stream(true)
+        .model("claude-3-opus")
+        .user("Write a story about a robot learning to cook.")
         .build(),
     new StreamHandler() {
         @Override
@@ -291,7 +495,7 @@ llm.streamComplete(
         
         @Override
         public void onComplete(LLMResponse response) {
-            System.out.println("\nDone! Latency: " + response.getLatencyMs() + "ms");
+            System.out.println("\n\nDone! Tokens: " + response.getUsage().getTotalTokens());
         }
         
         @Override
@@ -302,113 +506,143 @@ llm.streamComplete(
 );
 ```
 
-### Async with SDK
+### Builder Methods
 
 ```java
-CompletableFuture<LLMResponse> future = llm.completeAsync(request);
-
-future.thenAccept(response -> {
-    System.out.println("Got: " + response.getContent());
-}).exceptionally(error -> {
-    System.err.println("Error: " + error.getMessage());
-    return null;
-});
-```
-
----
-
-## 🛠️ Building LLMRequest
-
-```java
-LLMRequest request = LLMRequest.builder()
-    .model("gpt-4")
-    .system("You are a helpful assistant.")
-    .user("Explain quantum computing")
-    .temperature(0.7)        // 0.0 - 2.0
-    .maxTokens(1000)
-    .topP(0.95)
-    .frequencyPenalty(0.5)
-    .presencePenalty(0.5)
-    .stop("THE END")
+OneLLM llm = OneLLM.builder()
+    .openai("sk-...")                              // OpenAI
+    .openai("sk-...", "https://custom-url.com")    // Custom base URL
+    .anthropic("sk-ant-...")                       // Anthropic
+    .google("AIza...")                             // Google Gemini
+    .azure("api-key", "resource", "deployment")    // Azure OpenAI
+    .groq("gsk_...")                               // Groq
+    .cerebras("cbs-...")                           // Cerebras
+    .ollama()                                      // Ollama (localhost)
+    .ollama("http://custom-host:11434")            // Ollama (custom)
+    .openRouter("or-...")                          // OpenRouter
+    .openRouter("or-...", "MySite", "https://...")  // OpenRouter with site
+    .xai("xai-...")                                // xAI
+    .copilot("token")                              // GitHub Copilot
+    .provider(myCustomProvider)                    // Custom provider
     .build();
 ```
 
 ---
 
-## ⚠️ Error Handling
+## 🛡️ Error Handling
 
-### REST API Errors
+OneLLM provides structured error responses:
 
 ```json
 {
   "error": true,
-  "message": "Model 'unknown-model' not found",
-  "timestamp": "2024-12-12T19:00:00Z",
-  "type": "model_not_found"
+  "message": "API key is required",
+  "timestamp": "2024-12-12T14:30:00Z",
+  "type": "validation_error",
+  "fields": {
+    "apiKey": "API key is required"
+  }
 }
 ```
 
-| HTTP Status | Error Type |
-|-------------|------------|
-| 400 | Validation error, bad request |
-| 401 | Authentication error |
-| 404 | Model not found |
-| 429 | Rate limit exceeded |
-| 502 | Provider server error |
-| 503 | Provider not configured |
+### Error Types
 
-### SDK Exception Handling
+| Type | HTTP Status | Description |
+|------|-------------|-------------|
+| `validation_error` | 400 | Invalid request parameters (e.g., missing API key) |
+| `model_not_found` | 404 | No provider supports the model |
+| `provider_not_configured` | 503 | Provider not configured |
+| `authentication_error` | 401 | Invalid API key |
+| `rate_limit_error` | 429 | Rate limit exceeded |
+| `server_error` | 502 | Provider server error |
+| `internal_error` | 500 | Unexpected server error |
 
-```java
-try {
-    LLMResponse response = llm.complete(request);
-} catch (ModelNotFoundException e) {
-    System.err.println("Unknown model: " + e.getModel());
-} catch (LLMException e) {
-    if (e.isRateLimitError()) {
-        // Wait and retry
-    } else if (e.isAuthenticationError()) {
-        // Check API key
-    }
-}
+---
+
+## 🏗️ Project Structure
+
+```
+onellm/
+├── src/main/java/io/onellm/
+│   ├── OneLLM.java              # SDK entry point
+│   ├── OneLLMApplication.java   # Spring Boot application
+│   ├── config/
+│   │   └── LLMConfig.java       # Spring configuration
+│   ├── controller/
+│   │   └── ChatController.java  # REST API endpoints
+│   ├── service/
+│   │   └── ProviderFactory.java # Dynamic provider creation
+│   ├── core/
+│   │   ├── LLMProvider.java     # Provider interface
+│   │   ├── LLMRequest.java      # Request model
+│   │   ├── LLMResponse.java     # Response model
+│   │   ├── Message.java         # Chat message
+│   │   ├── StreamHandler.java   # Streaming callback
+│   │   └── Usage.java           # Token usage
+│   ├── dto/
+│   │   ├── ChatCompletionRequest.java
+│   │   ├── ChatCompletionResponse.java
+│   │   └── MessageDTO.java
+│   ├── exception/
+│   │   ├── GlobalExceptionHandler.java
+│   │   ├── LLMException.java
+│   │   ├── ModelNotFoundException.java
+│   │   └── ProviderNotConfiguredException.java
+│   ├── providers/
+│   │   ├── BaseProvider.java
+│   │   ├── OpenAIProvider.java
+│   │   ├── AnthropicProvider.java
+│   │   ├── GoogleProvider.java
+│   │   ├── AzureOpenAIProvider.java
+│   │   ├── GroqProvider.java
+│   │   ├── CerebrasProvider.java
+│   │   ├── OllamaProvider.java
+│   │   ├── OpenRouterProvider.java
+│   │   ├── XAIProvider.java
+│   │   └── CopilotProvider.java
+│   └── util/
+│       └── HttpClientWrapper.java
+└── pom.xml
 ```
 
 ---
 
-## 📊 Model Comparison
+## 🔒 Security Notes
 
-| Model | Provider | Speed | Quality | Context | Best For |
-|-------|----------|-------|---------|---------|----------|
-| `gpt-4` | OpenAI | ⭐⭐ | ⭐⭐⭐⭐⭐ | 8K | Complex reasoning |
-| `gpt-4o` | OpenAI | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 128K | Multimodal |
-| `claude-3-opus` | Anthropic | ⭐⭐ | ⭐⭐⭐⭐⭐ | 200K | Analysis, writing |
-| `claude-3.5-sonnet` | Anthropic | ⭐⭐⭐ | ⭐⭐⭐⭐ | 200K | Coding |
-| `gemini-1.5-pro` | Google | ⭐⭐⭐ | ⭐⭐⭐⭐ | 1M | Very long context |
-| `llama-3.1-70b` | Groq | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 128K | Fast inference |
-| `grok-2` | xAI | ⭐⭐⭐ | ⭐⭐⭐⭐ | 32K | Real-time info |
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
+- **API keys are never stored** on the server
+- Each request is processed independently with the provided credentials
+- Use HTTPS in production to encrypt API keys in transit
+- Consider implementing rate limiting for production deployments
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ---
 
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+Built with ❤️ using:
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [Apache HttpClient 5](https://hc.apache.org/httpcomponents-client-5.3.x/)
+- [Gson](https://github.com/google/gson)
+
+---
+
 <p align="center">
-  Made with ❤️ for the Java community
-  <br/>
-  <strong>One SDK to rule them all.</strong>
+  Made with ☕ by the OneLLM Team
 </p>
