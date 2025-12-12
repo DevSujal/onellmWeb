@@ -57,6 +57,12 @@ public class ProviderFactory {
         String providerName = detectProvider(model);
         logger.debug("Creating {} provider for model: {}", providerName, model);
         
+        // Validate API key is required for all providers except Ollama
+        if (!"ollama".equals(providerName) && (apiKey == null || apiKey.isBlank())) {
+            throw new IllegalArgumentException(
+                "API key is required for " + providerName + " provider");
+        }
+        
         return switch (providerName) {
             case "openai" -> baseUrl != null && !baseUrl.isEmpty() 
                     ? new OpenAIProvider(apiKey, baseUrl) 

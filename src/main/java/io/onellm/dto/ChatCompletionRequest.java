@@ -7,10 +7,12 @@ import java.util.List;
 
 /**
  * Request DTO for chat completion API.
+ * 
+ * Note: apiKey is optional for Ollama (local models), but required for all other providers.
  */
 public class ChatCompletionRequest {
     
-    @NotBlank(message = "API key is required")
+    // API key is optional for Ollama, required for other providers
     private String apiKey;
     
     @NotBlank(message = "Model is required")
