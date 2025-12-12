@@ -1,13 +1,11 @@
 package io.onellm.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 /**
  * Configuration properties for LLM providers.
  * All API keys can be set via environment variables or application.properties.
  */
-@Component
 @ConfigurationProperties(prefix = "onellm")
 public class LLMProperties {
     
