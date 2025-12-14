@@ -29,7 +29,8 @@ public class ProviderFactory {
         Map.entry("cerebras", Arrays.asList("cerebras", "llama3.1-8b", "llama3.1-70b", "llama-3.3-70b", "gpt-oss")),
         Map.entry("ollama", Arrays.asList("ollama/", "llama2", "codellama", "phi")),
         Map.entry("xai", Arrays.asList("grok")),
-        Map.entry("copilot", Arrays.asList("copilot"))
+        Map.entry("copilot", Arrays.asList("copilot")),
+        Map.entry("huggingface", Arrays.asList("huggingface/", "hf/", "meta-llama/", "mistralai/", "microsoft/phi", "Qwen/"))
     );
     
     /**
@@ -86,6 +87,9 @@ public class ProviderFactory {
                     : new OpenRouterProvider(apiKey);
             case "xai" -> new XAIProvider(apiKey);
             case "copilot" -> new CopilotProvider(apiKey);
+            case "huggingface" -> baseUrl != null && !baseUrl.isEmpty()
+                    ? new HuggingFaceProvider(apiKey, baseUrl)
+                    : new HuggingFaceProvider(apiKey);
             default -> throw new ModelNotFoundException(model);
         };
     }
@@ -131,7 +135,7 @@ public class ProviderFactory {
     public List<String> getSupportedProviders() {
         return Arrays.asList(
             "openai", "anthropic", "google", "azure", "groq", 
-            "cerebras", "ollama", "openrouter", "xai", "copilot"
+            "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface"
         );
     }
 }

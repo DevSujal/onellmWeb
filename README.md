@@ -5,7 +5,7 @@
 <h1 align="center">🚀 OneLLM</h1>
 
 <p align="center">
-  <strong>One Interface. Ten Providers. Your API Keys.</strong>
+  <strong>One Interface. Eleven Providers. Your API Keys.</strong>
 </p>
 
 <p align="center">
@@ -33,7 +33,7 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🔌 **10 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, and GitHub Copilot |
+| 🔌 **11 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, GitHub Copilot, and Hugging Face |
 | 🔑 **BYOK Model** | Users provide their own API keys — no server-side credential storage |
 | 🎯 **Auto-Routing** | Automatically routes requests based on model name |
 | 🌊 **Streaming** | Full support for streaming responses via SSE |
@@ -95,6 +95,7 @@ OneLLM supports **10 LLM providers** out of the box:
 | **OpenRouter** | 100+ models | `apiKey`, optionally `openRouterSiteName`, `openRouterSiteUrl` |
 | **xAI** | `grok-*` models | `apiKey` |
 | **GitHub Copilot** | Copilot models | `apiKey` |
+| **Hugging Face** | `meta-llama/*`, `mistralai/*`, `Qwen/*`, any HF model | `apiKey` (hf_token) |
 
 ### Model Auto-Detection
 
@@ -115,6 +116,8 @@ You can also use explicit provider prefixes:
 "anthropic/claude-3-opus"
 "google/gemini-pro"
 "azure/my-deployment"
+"huggingface/meta-llama/Llama-3.3-70B-Instruct"
+"hf/mistralai/Mistral-7B-Instruct-v0.3"
 ```
 
 ---
@@ -244,8 +247,8 @@ List all supported providers.
 
 ```json
 {
-  "providers": ["openai", "anthropic", "google", "azure", "groq", "cerebras", "ollama", "openrouter", "xai", "copilot"],
-  "count": 10
+  "providers": ["openai", "anthropic", "google", "azure", "groq", "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface"],
+  "count": 11
 }
 ```
 
@@ -389,6 +392,21 @@ curl -X POST http://localhost:8080/api/chat/completions \
   }'
 ```
 
+### Hugging Face
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "hf_your-huggingface-token",
+    "model": "huggingface/meta-llama/Llama-3.3-70B-Instruct",
+    "messages": [
+      {"role": "user", "content": "Hello from Hugging Face!"}
+    ],
+    "maxTokens": 500
+  }'
+```
+
 ### Streaming Example
 
 ```bash
@@ -523,6 +541,8 @@ OneLLM llm = OneLLM.builder()
     .openRouter("or-...", "MySite", "https://...")  // OpenRouter with site
     .xai("xai-...")                                // xAI
     .copilot("token")                              // GitHub Copilot
+    .huggingface("hf_...")                         // Hugging Face
+    .huggingface("hf_...", "https://endpoint")     // Hugging Face (dedicated endpoint)
     .provider(myCustomProvider)                    // Custom provider
     .build();
 ```
@@ -599,7 +619,8 @@ onellm/
 │   │   ├── OllamaProvider.java
 │   │   ├── OpenRouterProvider.java
 │   │   ├── XAIProvider.java
-│   │   └── CopilotProvider.java
+│   │   ├── CopilotProvider.java
+│   │   └── HuggingFaceProvider.java
 │   └── util/
 │       └── HttpClientWrapper.java
 └── pom.xml

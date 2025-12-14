@@ -259,6 +259,22 @@ public class OneLLM implements AutoCloseable {
         }
         
         /**
+         * Adds Hugging Face provider.
+         */
+        public Builder huggingface(String apiKey) {
+            providers.add(new HuggingFaceProvider(apiKey));
+            return this;
+        }
+        
+        /**
+         * Adds Hugging Face provider with custom base URL (for dedicated endpoints).
+         */
+        public Builder huggingface(String apiKey, String baseUrl) {
+            providers.add(new HuggingFaceProvider(apiKey, baseUrl));
+            return this;
+        }
+        
+        /**
          * Adds a custom provider.
          */
         public Builder provider(LLMProvider provider) {
