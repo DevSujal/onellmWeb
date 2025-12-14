@@ -1,11 +1,23 @@
 package io.onellm.providers;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.onellm.core.*;
-import io.onellm.exception.LLMException;
 
-import java.util.*;
+import io.onellm.core.LLMRequest;
+import io.onellm.core.LLMResponse;
+import io.onellm.core.Message;
+import io.onellm.core.StreamHandler;
+import io.onellm.core.Usage;
+import io.onellm.exception.LLMException;
 
 /**
  * Provider for Google's Gemini models.
@@ -49,10 +61,32 @@ public class GoogleProvider extends BaseProvider {
         return baseUrl;
     }
     
-    private String getEndpointForModel(String model, boolean stream) {
-        String modelName = model.startsWith("models/") ? model : "models/" + model;
+    protected String getEndpointForModel(String model, boolean stream) {
+        String normalizedModel = normalizeModelId(model);
+        String modelName = normalizedModel.startsWith("models/") ? normalizedModel : "models/" + normalizedModel;
         String action = stream ? "streamGenerateContent" : "generateContent";
-        return baseUrl + "/" + modelName + ":" + action + "?key=" + apiKey;
+        String trimmedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        return trimmedBaseUrl + "/" + modelName + ":" + action + "?key=" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8);
+    }
+
+    private String normalizeModelId(String model) {
+        if (model == null) return "";
+        String normalized = model.trim();
+        if (normalized.isEmpty()) return normalized;
+
+        // Accept explicit provider prefixes (e.g., "google/gemini-2.0-flash" or "gemini/gemini-2.0-flash")
+        String lower = normalized.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("google/") || lower.startsWith("gemini/")) {
+            normalized = normalized.substring(normalized.indexOf('/') + 1);
+            lower = normalized.toLowerCase(Locale.ROOT);
+        }
+
+        // Accept "models/<id>" input; we add "models/" back during URL building
+        if (lower.startsWith("models/")) {
+            normalized = normalized.substring("models/".length());
+        }
+
+        return normalized;
     }
     
     @Override

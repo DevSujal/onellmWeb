@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
-set -euo pipefail
+docker build -t onellmweb-app .
 # Build shaded jar and run Main
-java -cp target/classes:target/dependency/* Main.java
+
+docker rm -f $(docker ps -aq)
+
+docker run -p 8080:8080 onellmweb-app
