@@ -275,6 +275,24 @@ public class OneLLM implements AutoCloseable {
         }
         
         /**
+         * Adds FreeLLM provider - free LLM inference API.
+         * No API key required.
+         */
+        public Builder freellm() {
+            providers.add(new FreeLLMProvider());
+            return this;
+        }
+        
+        /**
+         * Adds FreeLLM provider with custom base URL.
+         * Useful if hosting your own FreeLLM instance.
+         */
+        public Builder freellm(String baseUrl) {
+            providers.add(new FreeLLMProvider(baseUrl));
+            return this;
+        }
+        
+        /**
          * Adds a custom provider.
          */
         public Builder provider(LLMProvider provider) {

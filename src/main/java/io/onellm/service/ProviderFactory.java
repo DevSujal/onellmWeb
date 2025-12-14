@@ -16,6 +16,7 @@ import io.onellm.providers.CerebrasProvider;
 import io.onellm.providers.CopilotProvider;
 import io.onellm.providers.GoogleProvider;
 import io.onellm.providers.GroqProvider;
+import io.onellm.providers.FreeLLMProvider;
 import io.onellm.providers.HuggingFaceProvider;
 import io.onellm.providers.OllamaProvider;
 import io.onellm.providers.OpenAIProvider;
@@ -41,7 +42,8 @@ public class ProviderFactory {
         Map.entry("ollama", Arrays.asList("ollama/", "llama2", "codellama", "phi")),
         Map.entry("xai", Arrays.asList("grok")),
         Map.entry("copilot", Arrays.asList("copilot")),
-        Map.entry("huggingface", Arrays.asList("huggingface/", "hf/", "meta-llama/", "mistralai/", "microsoft/phi", "Qwen/"))
+        Map.entry("huggingface", Arrays.asList("huggingface/", "hf/", "meta-llama/", "mistralai/", "microsoft/phi", "Qwen/")),
+        Map.entry("freellm", Arrays.asList("freellm/", "free/", "TinyLlama/"))
     );
     
     /**
@@ -69,8 +71,8 @@ public class ProviderFactory {
         String providerName = detectProvider(model);
         logger.debug("Creating {} provider for model: {}", providerName, model);
         
-        // Validate API key is required for all providers except Ollama
-        if (!"ollama".equals(providerName) && (apiKey == null || apiKey.isBlank())) {
+        // Validate API key is required for all providers except Ollama and FreeLLM
+        if (!"ollama".equals(providerName) && !"freellm".equals(providerName) && (apiKey == null || apiKey.isBlank())) {
             throw new IllegalArgumentException(
                 "API key is required for " + providerName + " provider");
         }
@@ -103,6 +105,9 @@ public class ProviderFactory {
             case "huggingface" -> baseUrl != null && !baseUrl.isEmpty()
                     ? new HuggingFaceProvider(apiKey, baseUrl)
                     : new HuggingFaceProvider(apiKey);
+            case "freellm" -> baseUrl != null && !baseUrl.isEmpty()
+                    ? new FreeLLMProvider(baseUrl)
+                    : new FreeLLMProvider();
             default -> throw new ModelNotFoundException(model);
         };
     }
@@ -148,7 +153,7 @@ public class ProviderFactory {
     public List<String> getSupportedProviders() {
         return Arrays.asList(
             "openai", "anthropic", "google", "azure", "groq", 
-            "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface"
+            "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface", "freellm"
         );
     }
 }

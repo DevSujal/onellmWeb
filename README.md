@@ -5,7 +5,7 @@
 <h1 align="center">🚀 OneLLM</h1>
 
 <p align="center">
-  <strong>One Interface. Eleven Providers. Your API Keys.</strong>
+  <strong>One Interface. Twelve Providers. Your API Keys.</strong>
 </p>
 
 <p align="center">
@@ -33,7 +33,7 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🔌 **11 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, GitHub Copilot, and Hugging Face |
+| 🔌 **12 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, GitHub Copilot, Hugging Face, and **FreeLLM** (Free!) |
 | 🔑 **BYOK Model** | Users provide their own API keys — no server-side credential storage |
 | 🎯 **Auto-Routing** | Automatically routes requests based on model name |
 | 🌊 **Streaming** | Full support for streaming responses via SSE |
@@ -96,6 +96,7 @@ OneLLM supports **10 LLM providers** out of the box:
 | **xAI** | `grok-*` models | `apiKey` |
 | **GitHub Copilot** | Copilot models | `apiKey` |
 | **Hugging Face** | `meta-llama/*`, `mistralai/*`, `Qwen/*`, any HF model | `apiKey` (hf_token) |
+| **FreeLLM** 🆓 | `TinyLlama/*`, `Qwen/*`, `microsoft/phi-2` | None (free!) |
 
 ### Model Auto-Detection
 
@@ -118,6 +119,8 @@ You can also use explicit provider prefixes:
 "azure/my-deployment"
 "huggingface/meta-llama/Llama-3.3-70B-Instruct"
 "hf/mistralai/Mistral-7B-Instruct-v0.3"
+"freellm/TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+"free/Qwen/Qwen2.5-0.5B-Instruct"
 ```
 
 ---
@@ -247,8 +250,8 @@ List all supported providers.
 
 ```json
 {
-  "providers": ["openai", "anthropic", "google", "azure", "groq", "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface"],
-  "count": 11
+  "providers": ["openai", "anthropic", "google", "azure", "groq", "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface", "freellm"],
+  "count": 12
 }
 ```
 
@@ -419,6 +422,42 @@ curl -X POST http://localhost:8080/api/chat/completions/stream \
   }'
 ```
 
+### FreeLLM (Free - No API Key!)
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "freellm/TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+    "messages": [
+      {"role": "user", "content": "Hello! What can you help me with?"}
+    ],
+    "maxTokens": 256
+  }'
+```
+
+> **Note**: FreeLLM is completely free - no API key required! It's hosted on Hugging Face Spaces with no rate limiting or billing. Perfect for testing and development.
+
+**Recommended FreeLLM Models:**
+| Model | Size | Speed | Quality |
+|-------|------|-------|---------|
+| `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | 1.1B | ⚡⚡⚡ | ⭐⭐ |
+| `Qwen/Qwen2.5-0.5B-Instruct` | 0.5B | ⚡⚡⚡ | ⭐⭐ |
+| `Qwen/Qwen2.5-1.5B-Instruct` | 1.5B | ⚡⚡ | ⭐⭐⭐ |
+| `microsoft/phi-2` | 2.7B | ⚡⚡ | ⭐⭐⭐⭐ |
+
+### Streaming Example
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions/stream \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "sk-your-openai-key",
+    "model": "gpt-4",
+    "messages": [{"role": "user", "content": "Count from 1 to 10 slowly."}]
+  }'
+```
+
 ---
 
 ## 💻 JavaScript/TypeScript Client
@@ -543,6 +582,8 @@ OneLLM llm = OneLLM.builder()
     .copilot("token")                              // GitHub Copilot
     .huggingface("hf_...")                         // Hugging Face
     .huggingface("hf_...", "https://endpoint")     // Hugging Face (dedicated endpoint)
+    .freellm()                                     // FreeLLM (free, no API key!)
+    .freellm("https://custom-freellm")             // FreeLLM (custom host)
     .provider(myCustomProvider)                    // Custom provider
     .build();
 ```
@@ -620,7 +661,8 @@ onellm/
 │   │   ├── OpenRouterProvider.java
 │   │   ├── XAIProvider.java
 │   │   ├── CopilotProvider.java
-│   │   └── HuggingFaceProvider.java
+│   │   ├── HuggingFaceProvider.java
+│   │   └── FreeLLMProvider.java
 │   └── util/
 │       └── HttpClientWrapper.java
 └── pom.xml
