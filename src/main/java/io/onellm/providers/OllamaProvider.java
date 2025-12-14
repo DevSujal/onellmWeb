@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class OllamaProvider extends BaseProvider {
     
-    private static final String DEFAULT_BASE_URL = "http://localhost:11434";
+    private static final String DEFAULT_BASE_URL = "https://mabemi-my-ollama.hf.space";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
             "ollama/", "local/"
     );

@@ -91,12 +91,12 @@ OneLLM supports **10 LLM providers** out of the box:
 | **Azure OpenAI** | Your deployed models | `apiKey`, `azureResourceName`, `azureDeploymentName` |
 | **Groq** | `llama-3`, `mixtral`, `gemma` | `apiKey` |
 | **Cerebras** | `cerebras-gpt` variants | `apiKey` |
-| **Ollama** | Any local model | `baseUrl` (optional, defaults to localhost) |
+| **Ollama** 🆓 | Any local model (`gemma`, `mistral`, `llama`, etc.) | `baseUrl` (optional, defaults to Hugging Face hosted) |
 | **OpenRouter** | 100+ models | `apiKey`, optionally `openRouterSiteName`, `openRouterSiteUrl` |
 | **xAI** | `grok-*` models | `apiKey` |
 | **GitHub Copilot** | Copilot models | `apiKey` |
 | **Hugging Face** | `meta-llama/*`, `mistralai/*`, `Qwen/*`, any HF model | `apiKey` (hf_token) |
-| **FreeLLM** 🆓 | `TinyLlama/*`, `Qwen/*`, `microsoft/phi-2` | None (free!) |
+| **FreeLLM** 🆓 | `TinyLlama/*`, `Qwen/*` | None (free!) |
 
 ### Model Auto-Detection
 
@@ -380,13 +380,36 @@ curl -X POST http://localhost:8080/api/chat/completions \
   }'
 ```
 
-### Ollama (Local Models)
+### Ollama (Free Hosted Models) 🆓
+
+Ollama is hosted on Hugging Face Spaces - **no local installation required!**
 
 ```bash
 curl -X POST http://localhost:8080/api/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "apiKey": "not-required",
+    "model": "ollama/gemma:2b",
+    "messages": [
+      {"role": "user", "content": "Hello from Ollama!"}
+    ]
+  }'
+```
+
+> **Note**: No API key required! Ollama is completely free to use via our hosted endpoint.
+
+**Free Ollama Models:**
+| Model | Size | Speed | Quality | Description |
+|-------|------|-------|---------|-------------|
+| `gemma:270M` | 270M | ⚡⚡⚡ | ⭐⭐⭐ | Google's lightweight Gemma model |
+| `gemma:4b` | 4B | ⚡⚡ | ⭐⭐⭐⭐ | Google's Gemma model |
+| `mistral:7b` | 7B | ⚡⚡ | ⭐⭐⭐⭐ | Mistral AI's powerful model |
+
+**Using Local Ollama:**
+To use a local Ollama instance instead, specify a custom `baseUrl`:
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
     "model": "ollama/llama2",
     "baseUrl": "http://localhost:11434",
     "messages": [
@@ -438,13 +461,12 @@ curl -X POST http://localhost:8080/api/chat/completions \
 
 > **Note**: FreeLLM is completely free - no API key required! It's hosted on Hugging Face Spaces with no rate limiting or billing. Perfect for testing and development.
 
-**Recommended FreeLLM Models:**
-| Model | Size | Speed | Quality |
-|-------|------|-------|---------|
-| `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | 1.1B | ⚡⚡⚡ | ⭐⭐ |
-| `Qwen/Qwen2.5-0.5B-Instruct` | 0.5B | ⚡⚡⚡ | ⭐⭐ |
-| `Qwen/Qwen2.5-1.5B-Instruct` | 1.5B | ⚡⚡ | ⭐⭐⭐ |
-| `microsoft/phi-2` | 2.7B | ⚡⚡ | ⭐⭐⭐⭐ |
+**Free FreeLLM Models (No API Key Required!):**
+| Model | Size | Speed | Quality | Description |
+|-------|------|-------|---------|-------------|
+| `TinyLlama/TinyLlama-1.1B-Chat-v1.0` | 1.1B | ⚡⚡⚡ | ⭐⭐ | Fast, lightweight chat model |
+| `Qwen/Qwen2.5-0.5B-Instruct` | 0.5B | ⚡⚡⚡ | ⭐⭐ | Ultra-fast, smallest model |
+| `Qwen/Qwen2.5-1.5B-Instruct` | 1.5B | ⚡⚡ | ⭐⭐⭐ | Balanced speed and quality |
 
 ### Streaming Example
 
