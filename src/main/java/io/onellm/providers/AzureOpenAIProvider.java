@@ -1,11 +1,17 @@
 package io.onellm.providers;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.onellm.core.*;
-import io.onellm.exception.LLMException;
 
-import java.util.*;
+import io.onellm.core.LLMRequest;
+import io.onellm.core.LLMResponse;
+import io.onellm.core.Usage;
+import io.onellm.exception.LLMException;
 
 /**
  * Provider for Azure OpenAI Service.
@@ -15,7 +21,7 @@ public class AzureOpenAIProvider extends BaseProvider {
     
     private static final String API_VERSION = "2024-02-01";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "azure/", "azure-"
+            "azure/"
     );
     
     private final String deploymentName;

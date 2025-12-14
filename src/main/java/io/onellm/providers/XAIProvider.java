@@ -15,7 +15,7 @@ public class XAIProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://api.x.ai/v1";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "grok", "xai/"
+            "grok/", "xai/"
     );
     
     public XAIProvider(String apiKey) {

@@ -1,11 +1,17 @@
 package io.onellm.providers;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.onellm.core.*;
-import io.onellm.exception.LLMException;
 
-import java.util.*;
+import io.onellm.core.LLMRequest;
+import io.onellm.core.LLMResponse;
+import io.onellm.core.Usage;
+import io.onellm.exception.LLMException;
 
 /**
  * Provider for Cerebras fast inference.
@@ -15,7 +21,7 @@ public class CerebrasProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://api.cerebras.ai/v1";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "cerebras/", "llama3.1-8b", "llama3.1-70b", "llama-3.3-70b"
+            "cerebras/"
     );
     
     public CerebrasProvider(String apiKey) {

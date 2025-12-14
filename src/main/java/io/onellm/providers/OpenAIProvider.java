@@ -15,7 +15,7 @@ public class OpenAIProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://api.openai.com/v1";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "gpt-4", "gpt-3.5", "o1", "o3", "chatgpt"
+            "gpt/", "openai/"
     );
     
     public OpenAIProvider(String apiKey) {

@@ -15,8 +15,7 @@ public class OpenRouterProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "openrouter/", "openai/", "anthropic/", "google/", "meta-llama/", 
-            "mistralai/", "cohere/", "perplexity/", "deepseek/"
+            "openrouter/"
     );
     
     private final String siteName;

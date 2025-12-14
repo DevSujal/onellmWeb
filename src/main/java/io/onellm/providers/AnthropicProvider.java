@@ -1,11 +1,19 @@
 package io.onellm.providers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.onellm.core.*;
-import io.onellm.exception.LLMException;
 
-import java.util.*;
+import io.onellm.core.LLMRequest;
+import io.onellm.core.LLMResponse;
+import io.onellm.core.Message;
+import io.onellm.core.Usage;
+import io.onellm.exception.LLMException;
 
 /**
  * Provider for Anthropic's Claude models.
@@ -16,7 +24,7 @@ public class AnthropicProvider extends BaseProvider {
     private static final String DEFAULT_BASE_URL = "https://api.anthropic.com/v1";
     private static final String API_VERSION = "2023-06-01";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "claude-3", "claude-4", "claude-2", "claude-instant"
+            "claude/", "anthropic/"
     );
     
     public AnthropicProvider(String apiKey) {

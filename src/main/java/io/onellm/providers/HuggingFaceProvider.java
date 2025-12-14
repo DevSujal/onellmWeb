@@ -1,11 +1,17 @@
 package io.onellm.providers;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import io.onellm.core.*;
-import io.onellm.exception.LLMException;
 
-import java.util.*;
+import io.onellm.core.LLMRequest;
+import io.onellm.core.LLMResponse;
+import io.onellm.core.Usage;
+import io.onellm.exception.LLMException;
 
 /**
  * Provider for Hugging Face Inference API.
@@ -15,10 +21,9 @@ import java.util.*;
  */
 public class HuggingFaceProvider extends BaseProvider {
     
-    private static final String DEFAULT_BASE_URL = "https://api-inference.huggingface.co/models";
+    private static final String DEFAULT_BASE_URL = "https://router.huggingface.co";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "huggingface/", "hf/", "meta-llama/", "mistralai/", "microsoft/", 
-            "google/flan", "tiiuae/", "bigscience/", "HuggingFaceH4/", "Qwen/"
+            "huggingface/", "hf/"
     );
     
     private final String modelEndpoint;
@@ -57,8 +62,20 @@ public class HuggingFaceProvider extends BaseProvider {
         if (modelEndpoint != null && !modelEndpoint.isEmpty()) {
             return modelEndpoint;
         }
-        // For serverless API, the model is appended to the base URL
-        return baseUrl;
+
+        // Hugging Face Router exposes an OpenAI-compatible endpoint:
+        //   https://router.huggingface.co/v1/chat/completions
+        String trimmedBaseUrl = baseUrl != null && baseUrl.endsWith("/")
+                ? baseUrl.substring(0, baseUrl.length() - 1)
+                : baseUrl;
+
+        if (trimmedBaseUrl != null && trimmedBaseUrl.endsWith("/v1")) {
+            return trimmedBaseUrl + "/chat/completions";
+        }
+        if (trimmedBaseUrl != null && trimmedBaseUrl.endsWith("/v1/chat/completions")) {
+            return trimmedBaseUrl;
+        }
+        return trimmedBaseUrl + "/v1/chat/completions";
     }
     
     @Override
@@ -72,36 +89,27 @@ public class HuggingFaceProvider extends BaseProvider {
     @Override
     protected Map<String, Object> buildRequestBody(LLMRequest request) {
         Map<String, Object> body = new HashMap<>();
-        
-        // Remove provider prefix if present
-        String model = request.getModel();
-        if (model.toLowerCase().startsWith("huggingface/")) {
-            model = model.substring(12);
-        } else if (model.toLowerCase().startsWith("hf/")) {
-            model = model.substring(3);
-        }
+
+        // Remove provider prefix if present (preserve remaining slashes)
+        String model = stripProviderPrefix(request.getModel());
         
         // Build messages in the format expected by HF chat completion API
-        List<Map<String, Object>> messages = convertMessages(request.getMessages());
+        List<Map<String, String>> messages = convertMessages(request.getMessages());
         body.put("messages", messages);
         body.put("model", model);
-        
-        // Parameters wrapper for HF API
-        Map<String, Object> parameters = new HashMap<>();
+
+        // OpenAI-compatible parameters
         if (request.getTemperature() != null) {
-            parameters.put("temperature", request.getTemperature());
+            body.put("temperature", request.getTemperature());
         }
         if (request.getMaxTokens() != null) {
-            parameters.put("max_new_tokens", request.getMaxTokens());
+            body.put("max_tokens", request.getMaxTokens());
         }
         if (request.getTopP() != null) {
-            parameters.put("top_p", request.getTopP());
+            body.put("top_p", request.getTopP());
         }
         if (request.getStop() != null && !request.getStop().isEmpty()) {
-            parameters.put("stop", request.getStop());
-        }
-        if (!parameters.isEmpty()) {
-            body.put("parameters", parameters);
+            body.put("stop", request.getStop());
         }
         
         if (request.isStream()) {
@@ -110,23 +118,18 @@ public class HuggingFaceProvider extends BaseProvider {
         
         return body;
     }
-    
-    /**
-     * Builds the full endpoint URL including the model name for serverless API.
-     */
-    public String getEndpointForModel(String model) {
-        if (modelEndpoint != null && !modelEndpoint.isEmpty()) {
-            return modelEndpoint;
+
+    private String stripProviderPrefix(String model) {
+        if (model == null) {
+            return null;
         }
-        
-        // Remove provider prefix if present
-        if (model.toLowerCase().startsWith("huggingface/")) {
-            model = model.substring(12);
-        } else if (model.toLowerCase().startsWith("hf/")) {
-            model = model.substring(3);
+        String lower = model.toLowerCase();
+        for (String prefix : MODEL_PREFIXES) {
+            if (prefix != null && !prefix.isEmpty() && lower.startsWith(prefix.toLowerCase())) {
+                return model.substring(prefix.length());
+            }
         }
-        
-        return baseUrl + "/" + model + "/v1/chat/completions";
+        return model;
     }
     
     @Override
@@ -134,11 +137,10 @@ public class HuggingFaceProvider extends BaseProvider {
         long startTime = System.currentTimeMillis();
         
         try {
-            String endpoint = getEndpointForModel(request.getModel());
+            String endpoint = getCompletionEndpoint();
             Map<String, Object> requestBody = buildRequestBody(request);
             
-            String responseBody = httpClient.post(endpoint, requestBody, getHeaders());
-            JsonObject response = gson.fromJson(responseBody, JsonObject.class);
+            JsonObject response = httpClient.post(endpoint, getHeaders(), requestBody);
             
             long latencyMs = System.currentTimeMillis() - startTime;
             return parseResponse(response, request.getModel(), latencyMs);

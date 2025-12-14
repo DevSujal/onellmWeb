@@ -15,7 +15,7 @@ public class GroqProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://api.groq.com/openai/v1";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "llama", "mixtral", "gemma", "groq/"
+             "groq/"
     );
     
     public GroqProvider(String apiKey) {

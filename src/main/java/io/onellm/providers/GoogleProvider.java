@@ -15,7 +15,7 @@ public class GoogleProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "gemini", "models/gemini"
+            "gemini/", "google/"
     );
     
     public GoogleProvider(String apiKey) {

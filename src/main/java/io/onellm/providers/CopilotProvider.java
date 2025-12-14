@@ -15,7 +15,7 @@ public class CopilotProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://api.githubcopilot.com";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "copilot", "github/"
+            "copilot/", "github/"
     );
     
     public CopilotProvider(String apiKey) {
