@@ -178,7 +178,8 @@ public class ChatController {
     
     /**
      * Get models for a specific provider.
-     * GET /api/models/{provider}?apiKey=xxx&baseUrl=xxx
+     * GET /api/models/{provider}
+     * Query params: apiKey (optional), baseUrl (optional)
      * 
      * If apiKey is provided, will attempt to fetch dynamic models.
      * Otherwise, returns static list.
