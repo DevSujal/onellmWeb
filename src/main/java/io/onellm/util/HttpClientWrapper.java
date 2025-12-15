@@ -79,40 +79,79 @@ public class HttpClientWrapper implements AutoCloseable {
     }
     
     /**
-     * Makes a streaming POST request.
+     * Makes a streaming POST request using HttpURLConnection.
+     * Using HttpURLConnection instead of Apache HttpClient to handle chunked encoding
+     * termination issues with servers like Ollama that don't properly terminate chunked responses.
      */
     public void postStream(String url, Map<String, String> headers, Object body, 
                           Consumer<String> onLine, Consumer<Throwable> onError) throws LLMException {
         String jsonBody = gson.toJson(body);
-        
-        HttpPost request = new HttpPost(url);
-        headers.forEach(request::addHeader);
-        request.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
+        java.net.HttpURLConnection connection = null;
         
         try {
-            httpClient.execute(request, response -> {
-                int statusCode = response.getCode();
-                
-                if (statusCode >= 400) {
-                    String errorBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-                    onError.accept(new LLMException("HTTP " + statusCode + ": " + errorBody));
-                    return null;
-                }
-                
-                try (BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(response.getEntity().getContent(), StandardCharsets.UTF_8))) {
+            java.net.URL urlObj = new java.net.URI(url).toURL();
+            connection = (java.net.HttpURLConnection) urlObj.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setConnectTimeout(60000);  // 60 seconds connect timeout
+            connection.setReadTimeout(300000);    // 5 minutes read timeout for streaming
+            
+            // Set headers
+            connection.setRequestProperty("Content-Type", "application/json");
+            headers.forEach(connection::setRequestProperty);
+            
+            // Write request body
+            try (java.io.OutputStream os = connection.getOutputStream()) {
+                os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+            
+            int statusCode = connection.getResponseCode();
+            
+            if (statusCode >= 400) {
+                try (BufferedReader errorReader = new BufferedReader(
+                        new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8))) {
+                    StringBuilder errorBody = new StringBuilder();
                     String line;
-                    while ((line = reader.readLine()) != null) {
-                        if (!line.isEmpty()) {
-                            onLine.accept(line);
-                        }
+                    while ((line = errorReader.readLine()) != null) {
+                        errorBody.append(line);
+                    }
+                    onError.accept(new LLMException("HTTP " + statusCode + ": " + errorBody));
+                }
+                return;
+            }
+            
+            // Read streaming response
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.isEmpty()) {
+                        onLine.accept(line);
                     }
                 }
-                return null;
-            });
+            }
+            
+        } catch (java.net.URISyntaxException e) {
+            logger.error("Invalid URL: {} - Error: {}", url, e.getMessage(), e);
+            onError.accept(new LLMException("Invalid URL: " + e.getMessage(), e));
         } catch (IOException e) {
-            logger.error("Streaming request failed to URL: {} - Error: {}", url, e.getMessage(), e);
-            onError.accept(new LLMException("Streaming request failed: " + e.getMessage(), e));
+            // Gracefully handle connection close - this is expected for streaming
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && (errorMessage.contains("Premature EOF") || 
+                    errorMessage.contains("Connection reset") ||
+                    errorMessage.contains("stream is closed"))) {
+                logger.debug("Stream ended (expected): {}", errorMessage);
+                // Don't report as error - stream just ended
+            } else {
+                logger.error("Streaming request failed to URL: {} - Error: {}", url, e.getMessage(), e);
+                onError.accept(new LLMException("Streaming request failed: " + e.getMessage(), e));
+            }
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
     }
     
