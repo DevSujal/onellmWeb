@@ -126,7 +126,10 @@ public class HttpClientWrapper implements AutoCloseable {
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
+                int lineCount = 0;
                 while ((line = reader.readLine()) != null) {
+                    lineCount++;
+                    logger.debug("Stream line {}: [{}]", lineCount, line.length() > 200 ? line.substring(0, 200) + "..." : line);
                     if (!line.isEmpty()) {
                         onLine.accept(line);
                     }

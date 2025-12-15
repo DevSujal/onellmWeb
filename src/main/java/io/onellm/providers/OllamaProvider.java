@@ -127,11 +127,14 @@ public class OllamaProvider extends BaseProvider {
     @Override
     protected String parseStreamChunk(String line) {
         // Ollama returns JSON directly, not SSE format
+        logger.debug("OllamaProvider parsing line: [{}]", line.length() > 100 ? line.substring(0, 100) + "..." : line);
         try {
             JsonObject json = com.google.gson.JsonParser.parseString(line).getAsJsonObject();
-            return extractContentFromStreamChunk(json);
+            String content = extractContentFromStreamChunk(json);
+            logger.debug("OllamaProvider extracted content: [{}]", content);
+            return content;
         } catch (Exception e) {
-            logger.trace("Failed to parse Ollama stream chunk: {}", line);
+            logger.debug("Failed to parse Ollama stream chunk: {} - Error: {}", line, e.getMessage());
             return null;
         }
     }

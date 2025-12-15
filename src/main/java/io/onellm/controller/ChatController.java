@@ -105,11 +105,13 @@ public class ChatController {
                     @Override
                     public void onChunk(String chunk) {
                         try {
+                            logger.debug("Controller received chunk: [{}]", chunk != null ? chunk.substring(0, Math.min(chunk.length(), 50)) : "null");
                             Map<String, String> data = new HashMap<>();
                             data.put("content", chunk);
                             emitter.send(SseEmitter.event()
                                     .name("chunk")
                                     .data(data));
+                            logger.debug("Sent SSE chunk successfully");
                         } catch (IOException e) {
                             logger.error("Error sending SSE chunk", e);
                         }

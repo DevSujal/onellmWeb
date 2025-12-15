@@ -94,12 +94,17 @@ public abstract class BaseProvider implements LLMProvider {
         StringBuilder fullContent = new StringBuilder();
         long startTime = System.currentTimeMillis();
         
+        logger.debug("Starting stream to endpoint: {}", endpoint);
+        
         httpClient.postStream(endpoint, getHeaders(), body,
             line -> {
+                logger.debug("BaseProvider received line: [{}]", line.length() > 100 ? line.substring(0, 100) + "..." : line);
                 String chunk = parseStreamChunk(line);
+                logger.debug("Parsed chunk: [{}]", chunk);
                 if (chunk != null && !chunk.isEmpty()) {
                     fullContent.append(chunk);
                     handler.onChunk(chunk);
+                    logger.debug("Accumulated content length: {}", fullContent.length());
                 }
             },
             error -> handler.onError(error)
