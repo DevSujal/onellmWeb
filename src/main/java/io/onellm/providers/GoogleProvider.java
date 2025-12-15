@@ -273,24 +273,9 @@ public class GoogleProvider extends BaseProvider {
     @Override
     protected List<ModelInfo> getStaticModels() {
         return Arrays.asList(
-            // Gemini 2.0 family
-            new ModelInfo("google/gemini-2.0-flash", "Gemini 2.0 Flash", "google", "Latest & fastest"),
-            new ModelInfo("google/gemini-2.0-flash-exp", "Gemini 2.0 Flash Exp", "google", "Experimental"),
-            new ModelInfo("google/gemini-2.0-flash-thinking-exp", "Gemini 2.0 Flash Thinking", "google", "Reasoning mode"),
-            
-            // Gemini 1.5 family
-            new ModelInfo("google/gemini-1.5-pro", "Gemini 1.5 Pro", "google", "Most capable"),
-            new ModelInfo("google/gemini-1.5-pro-latest", "Gemini 1.5 Pro Latest", "google", "Latest Pro"),
-            new ModelInfo("google/gemini-1.5-pro-002", "Gemini 1.5 Pro 002", "google", "Stable version"),
-            new ModelInfo("google/gemini-1.5-flash", "Gemini 1.5 Flash", "google", "Fast"),
-            new ModelInfo("google/gemini-1.5-flash-latest", "Gemini 1.5 Flash Latest", "google", "Latest Flash"),
-            new ModelInfo("google/gemini-1.5-flash-002", "Gemini 1.5 Flash 002", "google", "Stable Flash"),
-            new ModelInfo("google/gemini-1.5-flash-8b", "Gemini 1.5 Flash 8B", "google", "Lightweight Flash"),
-            
-            // Gemini 1.0 family
-            new ModelInfo("google/gemini-1.0-pro", "Gemini 1.0 Pro", "google", "Balanced"),
-            new ModelInfo("google/gemini-pro", "Gemini Pro", "google", "Alias for 1.0 Pro"),
-            new ModelInfo("google/gemini-pro-vision", "Gemini Pro Vision", "google", "Vision capabilities")
+            new ModelInfo("google/gemini-2.5-flash", "Gemini 2.5 Flash", "google", "Fast & capable"),
+            new ModelInfo("google/gemini-2.5-flash-lite", "Gemini 2.5 Flash Lite", "google", "Lightweight version"),
+            new ModelInfo("google/gemini-3-pro", "Gemini 3 Pro", "google", "Most advanced")
         );
     }
 }
