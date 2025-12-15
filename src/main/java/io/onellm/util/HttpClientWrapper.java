@@ -39,7 +39,8 @@ public class HttpClientWrapper implements AutoCloseable {
     private final long retryDelayMs;
     
     public HttpClientWrapper() {
-        this(30000, 60000, 3, 1000);
+        // Increased timeouts for streaming to slower HF Spaces
+        this(60000, 300000, 3, 1000);
     }
     
     public HttpClientWrapper(int connectTimeoutMs, int readTimeoutMs, int maxRetries, long retryDelayMs) {
@@ -110,7 +111,8 @@ public class HttpClientWrapper implements AutoCloseable {
                 return null;
             });
         } catch (IOException e) {
-            onError.accept(new LLMException("Streaming request failed", e));
+            logger.error("Streaming request failed to URL: {} - Error: {}", url, e.getMessage(), e);
+            onError.accept(new LLMException("Streaming request failed: " + e.getMessage(), e));
         }
     }
     

@@ -468,6 +468,48 @@ curl -X POST http://localhost:8080/api/chat/completions \
 | `Qwen/Qwen2.5-0.5B-Instruct` | 0.5B | ⚡⚡⚡ | ⭐⭐ | Ultra-fast, smallest model |
 | `Qwen/Qwen2.5-1.5B-Instruct` | 1.5B | ⚡⚡ | ⭐⭐⭐ | Balanced speed and quality |
 
+### RWKV7 (Free - OpenAI Compatible!) 🆓
+
+RWKV7 is a powerful multilingual reasoning model hosted on Hugging Face Spaces with an **OpenAI-compatible API**.
+
+```bash
+curl -X POST https://rwkv-red-team-rwkv-latestspace.hf.space/api/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-test" \
+  -d '{
+    "model": "rwkv7-g1a4-2.9b-20251118-ctx8192",
+    "messages": [
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": "What is the capital of France?"}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 512
+  }'
+```
+
+**Reasoning Mode (Chain-of-Thought):**
+
+```bash
+curl -X POST https://rwkv-red-team-rwkv-latestspace.hf.space/api/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-test" \
+  -d '{
+    "model": "rwkv7-g1a4-2.9b-20251118-ctx8192:thinking",
+    "messages": [
+      {"role": "user", "content": "What is 25 * 47? Show your reasoning."}
+    ],
+    "max_tokens": 1000
+  }'
+```
+
+> **Note**: Use `sk-test` as the API key. RWKV7 is completely free to use!
+
+**Free RWKV7 Models:**
+| Model | Parameters | Max Context | Description |
+|-------|------------|-------------|-------------|
+| `rwkv7-g1a4-2.9b-20251118-ctx8192` | 2.9B | 8192 | Standard chat mode |
+| `rwkv7-g1a4-2.9b-20251118-ctx8192:thinking` | 2.9B | 8192 | Reasoning mode (chain-of-thought) |
+
 ### Streaming Example
 
 ```bash
