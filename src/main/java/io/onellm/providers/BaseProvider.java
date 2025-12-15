@@ -2,6 +2,7 @@ package io.onellm.providers;
 
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 import io.onellm.util.HttpClientWrapper;
 import org.slf4j.Logger;
@@ -152,5 +153,76 @@ public abstract class BaseProvider implements LLMProvider {
             result.add(m);
         }
         return result;
+    }
+    
+    /**
+     * Gets available models from this provider.
+     * Default implementation returns static models.
+     * Providers with dynamic models API should override this.
+     */
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        return getStaticModels();
+    }
+    
+    /**
+     * Gets the static list of models for this provider.
+     * Override in subclasses to provide provider-specific models.
+     */
+    protected abstract List<ModelInfo> getStaticModels();
+    
+    /**
+     * Gets the models endpoint URL for this provider.
+     * Override in providers that support dynamic model fetching.
+     */
+    protected String getModelsEndpoint() {
+        return null;
+    }
+    
+    /**
+     * Fetches models dynamically from the provider's API.
+     * Returns static models on failure.
+     */
+    protected List<ModelInfo> fetchDynamicModels() {
+        String endpoint = getModelsEndpoint();
+        if (endpoint == null) {
+            return getStaticModels();
+        }
+        
+        try {
+            JsonObject response = httpClient.get(endpoint, getHeaders());
+            return parseModelsResponse(response);
+        } catch (Exception e) {
+            logger.warn("Failed to fetch dynamic models from {}, using static list: {}", 
+                       endpoint, e.getMessage());
+            return getStaticModels();
+        }
+    }
+    
+    /**
+     * Parses the models response from the API.
+     * Override for provider-specific parsing.
+     */
+    protected List<ModelInfo> parseModelsResponse(JsonObject response) {
+        List<ModelInfo> models = new ArrayList<>();
+        if (response.has("data") && response.get("data").isJsonArray()) {
+            for (var element : response.getAsJsonArray("data")) {
+                JsonObject modelObj = element.getAsJsonObject();
+                String id = modelObj.has("id") ? modelObj.get("id").getAsString() : null;
+                if (id != null) {
+                    ModelInfo model = ModelInfo.builder()
+                            .id(getName() + "/" + id)
+                            .name(id)
+                            .provider(getName())
+                            .description(modelObj.has("owned_by") ? 
+                                "By " + modelObj.get("owned_by").getAsString() : null)
+                            .created(modelObj.has("created") ? 
+                                modelObj.get("created").getAsLong() : null)
+                            .build();
+                    models.add(model);
+                }
+            }
+        }
+        return models;
     }
 }

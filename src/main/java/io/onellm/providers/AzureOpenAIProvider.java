@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import io.onellm.core.LLMRequest;
 import io.onellm.core.LLMResponse;
 import io.onellm.core.Usage;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 /**
@@ -153,5 +154,17 @@ public class AzureOpenAIProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        // Azure models are deployment-specific, so we return common deployments
+        return Arrays.asList(
+            new ModelInfo("azure/gpt-4o", "GPT-4o (Azure)", "azure", "Requires Azure deployment"),
+            new ModelInfo("azure/gpt-4-turbo", "GPT-4 Turbo (Azure)", "azure", "Requires Azure deployment"),
+            new ModelInfo("azure/gpt-4", "GPT-4 (Azure)", "azure", "Requires Azure deployment"),
+            new ModelInfo("azure/gpt-35-turbo", "GPT-3.5 Turbo (Azure)", "azure", "Requires Azure deployment"),
+            new ModelInfo("azure/gpt-35-turbo-16k", "GPT-3.5 Turbo 16K (Azure)", "azure", "Extended context")
+        );
     }
 }

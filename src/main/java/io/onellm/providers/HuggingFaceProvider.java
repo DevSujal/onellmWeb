@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import io.onellm.core.LLMRequest;
 import io.onellm.core.LLMResponse;
 import io.onellm.core.Usage;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 /**
@@ -212,5 +213,37 @@ public class HuggingFaceProvider extends BaseProvider {
             return chunk.getAsJsonObject("token").get("text").getAsString();
         }
         return null;
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            // Meta Llama
+            new ModelInfo("huggingface/meta-llama/Llama-3.3-70B-Instruct", "Llama 3.3 70B", "huggingface", "Meta latest"),
+            new ModelInfo("huggingface/meta-llama/Llama-3.1-70B-Instruct", "Llama 3.1 70B", "huggingface", "Very capable"),
+            new ModelInfo("huggingface/meta-llama/Llama-3.1-8B-Instruct", "Llama 3.1 8B", "huggingface", "Fast"),
+            
+            // Mistral
+            new ModelInfo("huggingface/mistralai/Mistral-7B-Instruct-v0.3", "Mistral 7B v0.3", "huggingface", "Latest Mistral"),
+            new ModelInfo("huggingface/mistralai/Mixtral-8x7B-Instruct-v0.1", "Mixtral 8x7B", "huggingface", "MoE model"),
+            
+            // Qwen
+            new ModelInfo("huggingface/Qwen/Qwen2.5-72B-Instruct", "Qwen 2.5 72B", "huggingface", "Most capable"),
+            new ModelInfo("huggingface/Qwen/Qwen2.5-32B-Instruct", "Qwen 2.5 32B", "huggingface", "Very capable"),
+            new ModelInfo("huggingface/Qwen/Qwen2.5-7B-Instruct", "Qwen 2.5 7B", "huggingface", "Balanced"),
+            new ModelInfo("huggingface/Qwen/Qwen2.5-Coder-32B-Instruct", "Qwen 2.5 Coder 32B", "huggingface", "Code specialist"),
+            
+            // Microsoft
+            new ModelInfo("huggingface/microsoft/Phi-3-medium-4k-instruct", "Phi-3 Medium", "huggingface", "Microsoft balanced"),
+            new ModelInfo("huggingface/microsoft/Phi-3-mini-4k-instruct", "Phi-3 Mini", "huggingface", "Microsoft lightweight"),
+            
+            // DeepSeek
+            new ModelInfo("huggingface/deepseek-ai/DeepSeek-V3", "DeepSeek V3", "huggingface", "Latest DeepSeek"),
+            new ModelInfo("huggingface/deepseek-ai/DeepSeek-R1", "DeepSeek R1", "huggingface", "Reasoning model"),
+            
+            // RWKV
+            new ModelInfo("hf/rwkv7-g1a4-2.9b-20251118-ctx8192", "RWKV7 2.9B", "huggingface", "Standard chat", true),
+            new ModelInfo("hf/rwkv7-g1a4-2.9b-20251118-ctx8192:thinking", "RWKV7 2.9B Thinking", "huggingface", "Chain-of-thought", true)
+        );
     }
 }

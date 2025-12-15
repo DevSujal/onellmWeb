@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import io.onellm.core.LLMRequest;
 import io.onellm.core.LLMResponse;
 import io.onellm.core.Usage;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 /**
@@ -213,5 +214,15 @@ public class FreeLLMProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            new ModelInfo("freellm/TinyLlama/TinyLlama-1.1B-Chat-v1.0", "TinyLlama 1.1B", "freellm", "Fast, lightweight", true),
+            new ModelInfo("freellm/Qwen/Qwen2.5-0.5B-Instruct", "Qwen 0.5B", "freellm", "Ultra-fast", true),
+            new ModelInfo("freellm/Qwen/Qwen2.5-1.5B-Instruct", "Qwen 1.5B", "freellm", "Balanced", true),
+            new ModelInfo("freellm/microsoft/phi-2", "Phi-2", "freellm", "High quality, 2.7B", true)
+        );
     }
 }

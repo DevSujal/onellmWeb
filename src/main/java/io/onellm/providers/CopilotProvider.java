@@ -3,6 +3,7 @@ package io.onellm.providers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 import java.util.*;
@@ -138,5 +139,17 @@ public class CopilotProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            new ModelInfo("copilot/gpt-4o", "GPT-4o (Copilot)", "copilot", "Flagship model"),
+            new ModelInfo("copilot/gpt-4", "GPT-4 (Copilot)", "copilot", "Capable model"),
+            new ModelInfo("copilot/gpt-3.5-turbo", "GPT-3.5 Turbo (Copilot)", "copilot", "Fast model"),
+            new ModelInfo("copilot/claude-3.5-sonnet", "Claude 3.5 Sonnet (Copilot)", "copilot", "Anthropic model"),
+            new ModelInfo("copilot/o1", "O1 (Copilot)", "copilot", "Reasoning model"),
+            new ModelInfo("copilot/o1-mini", "O1 Mini (Copilot)", "copilot", "Fast reasoning")
+        );
     }
 }

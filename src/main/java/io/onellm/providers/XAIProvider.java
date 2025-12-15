@@ -3,6 +3,7 @@ package io.onellm.providers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 import java.util.*;
@@ -120,5 +121,26 @@ public class XAIProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected String getModelsEndpoint() {
+        return baseUrl + "/models";
+    }
+    
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        return fetchDynamicModels();
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            new ModelInfo("xai/grok-2-latest", "Grok 2", "xai", "Latest Grok"),
+            new ModelInfo("xai/grok-2-1212", "Grok 2 1212", "xai", "131K context"),
+            new ModelInfo("xai/grok-2-vision-1212", "Grok 2 Vision", "xai", "Multimodal"),
+            new ModelInfo("xai/grok-beta", "Grok Beta", "xai", "Experimental"),
+            new ModelInfo("xai/grok-vision-beta", "Grok Vision Beta", "xai", "Vision experimental")
+        );
     }
 }

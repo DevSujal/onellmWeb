@@ -62,6 +62,55 @@ public class HttpClientWrapper implements AutoCloseable {
     }
     
     /**
+     * Makes a GET request and returns the JSON response.
+     */
+    public JsonObject get(String url, Map<String, String> headers) throws LLMException {
+        return getWithRetry(url, headers, 0);
+    }
+    
+    private JsonObject getWithRetry(String url, Map<String, String> headers, int attempt) throws LLMException {
+        org.apache.hc.client5.http.classic.methods.HttpGet request = 
+            new org.apache.hc.client5.http.classic.methods.HttpGet(url);
+        headers.forEach(request::addHeader);
+        
+        try {
+            return httpClient.execute(request, response -> {
+                int statusCode = response.getCode();
+                String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+                
+                if (statusCode >= 400) {
+                    if (statusCode == 429 || statusCode >= 500) {
+                        if (attempt < maxRetries) {
+                            logger.warn("GET request failed with status {}, retrying ({}/{})", 
+                                        statusCode, attempt + 1, maxRetries);
+                            try {
+                                Thread.sleep(retryDelayMs * (attempt + 1));
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            }
+                            return getWithRetry(url, headers, attempt + 1);
+                        }
+                    }
+                    throw new LLMException("API", "HTTP " + statusCode + ": " + responseBody, statusCode);
+                }
+                
+                return JsonParser.parseString(responseBody).getAsJsonObject();
+            });
+        } catch (IOException e) {
+            if (attempt < maxRetries) {
+                logger.warn("GET request failed with IO error, retrying ({}/{})", attempt + 1, maxRetries);
+                try {
+                    Thread.sleep(retryDelayMs * (attempt + 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+                return getWithRetry(url, headers, attempt + 1);
+            }
+            throw new LLMException("GET request failed after " + maxRetries + " retries", e);
+        }
+    }
+    
+    /**
      * Makes a POST request and returns the JSON response.
      */
     public JsonObject post(String url, Map<String, String> headers, Object body) throws LLMException {

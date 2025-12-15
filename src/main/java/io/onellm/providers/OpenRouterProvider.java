@@ -3,6 +3,7 @@ package io.onellm.providers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 import java.util.*;
@@ -153,5 +154,75 @@ public class OpenRouterProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected String getModelsEndpoint() {
+        return baseUrl + "/models";
+    }
+    
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        // Try to fetch from OpenRouter's /models endpoint
+        try {
+            JsonObject response = httpClient.get(getModelsEndpoint(), getHeaders());
+            List<ModelInfo> models = new ArrayList<>();
+            
+            if (response.has("data") && response.get("data").isJsonArray()) {
+                for (var element : response.getAsJsonArray("data")) {
+                    JsonObject modelObj = element.getAsJsonObject();
+                    String id = modelObj.has("id") ? modelObj.get("id").getAsString() : null;
+                    if (id != null) {
+                        ModelInfo model = ModelInfo.builder()
+                                .id("openrouter/" + id)
+                                .name(modelObj.has("name") ? modelObj.get("name").getAsString() : id)
+                                .provider(getName())
+                                .description(modelObj.has("description") ? 
+                                    modelObj.get("description").getAsString() : "OpenRouter model")
+                                .build();
+                        models.add(model);
+                    }
+                }
+            }
+            return models.isEmpty() ? getStaticModels() : models;
+        } catch (Exception e) {
+            logger.warn("Failed to fetch OpenRouter models, using static list: {}", e.getMessage());
+            return getStaticModels();
+        }
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            // OpenAI via OpenRouter
+            new ModelInfo("openrouter/openai/gpt-4o", "GPT-4o", "openrouter", "OpenAI flagship"),
+            new ModelInfo("openrouter/openai/gpt-4-turbo", "GPT-4 Turbo", "openrouter", "OpenAI smart"),
+            new ModelInfo("openrouter/openai/gpt-3.5-turbo", "GPT-3.5 Turbo", "openrouter", "OpenAI fast"),
+            
+            // Anthropic via OpenRouter
+            new ModelInfo("openrouter/anthropic/claude-3-5-sonnet", "Claude 3.5 Sonnet", "openrouter", "Best balance"),
+            new ModelInfo("openrouter/anthropic/claude-3-opus", "Claude 3 Opus", "openrouter", "Most capable"),
+            new ModelInfo("openrouter/anthropic/claude-3-haiku", "Claude 3 Haiku", "openrouter", "Fastest"),
+            
+            // Google via OpenRouter
+            new ModelInfo("openrouter/google/gemini-pro-1.5", "Gemini Pro 1.5", "openrouter", "Google capable"),
+            new ModelInfo("openrouter/google/gemini-flash-1.5", "Gemini Flash 1.5", "openrouter", "Google fast"),
+            
+            // Meta via OpenRouter
+            new ModelInfo("openrouter/meta-llama/llama-3.3-70b-instruct", "Llama 3.3 70B", "openrouter", "Meta flagship"),
+            new ModelInfo("openrouter/meta-llama/llama-3.1-8b-instruct", "Llama 3.1 8B", "openrouter", "Meta fast"),
+            
+            // Mistral via OpenRouter
+            new ModelInfo("openrouter/mistralai/mixtral-8x7b-instruct", "Mixtral 8x7B", "openrouter", "MoE model"),
+            new ModelInfo("openrouter/mistralai/mistral-7b-instruct", "Mistral 7B", "openrouter", "Fast Mistral"),
+            
+            // DeepSeek via OpenRouter
+            new ModelInfo("openrouter/deepseek/deepseek-chat", "DeepSeek Chat", "openrouter", "Affordable"),
+            new ModelInfo("openrouter/deepseek/deepseek-r1", "DeepSeek R1", "openrouter", "Reasoning"),
+            
+            // Free models
+            new ModelInfo("openrouter/nousresearch/hermes-3-llama-3.1-405b:free", "Hermes 3 405B", "openrouter", "Free tier", true),
+            new ModelInfo("openrouter/meta-llama/llama-3.2-3b-instruct:free", "Llama 3.2 3B", "openrouter", "Free tier", true)
+        );
     }
 }

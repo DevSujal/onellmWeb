@@ -3,6 +3,7 @@ package io.onellm.providers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 import java.util.*;
@@ -134,5 +135,84 @@ public class OllamaProvider extends BaseProvider {
             logger.trace("Failed to parse Ollama stream chunk: {}", line);
             return null;
         }
+    }
+    
+    @Override
+    protected String getModelsEndpoint() {
+        return baseUrl + "/api/tags";
+    }
+    
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        // Try to fetch from Ollama's /api/tags endpoint
+        try {
+            JsonObject response = httpClient.get(getModelsEndpoint(), getHeaders());
+            List<ModelInfo> models = new ArrayList<>();
+            
+            if (response.has("models") && response.get("models").isJsonArray()) {
+                for (var element : response.getAsJsonArray("models")) {
+                    JsonObject modelObj = element.getAsJsonObject();
+                    String name = modelObj.has("name") ? modelObj.get("name").getAsString() : null;
+                    if (name != null) {
+                        ModelInfo model = ModelInfo.builder()
+                                .id("ollama/" + name)
+                                .name(name)
+                                .provider(getName())
+                                .description("Ollama local model")
+                                .free(true)
+                                .build();
+                        models.add(model);
+                    }
+                }
+            }
+            return models.isEmpty() ? getStaticModels() : models;
+        } catch (Exception e) {
+            logger.warn("Failed to fetch Ollama models, using static list: {}", e.getMessage());
+            return getStaticModels();
+        }
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            // Gemma (Google)
+            new ModelInfo("ollama/gemma3:1b", "Gemma3 1B", "ollama", "Google ultra-light", true),
+            new ModelInfo("ollama/gemma3:4b", "Gemma3 4B", "ollama", "Google balanced", true),
+            new ModelInfo("ollama/gemma2:2b", "Gemma2 2B", "ollama", "Google efficient", true),
+            new ModelInfo("ollama/gemma2:9b", "Gemma2 9B", "ollama", "Google capable", true),
+            
+            // Llama (Meta)
+            new ModelInfo("ollama/llama3.3:70b", "Llama 3.3 70B", "ollama", "Latest Meta flagship", true),
+            new ModelInfo("ollama/llama3.2:1b", "Llama 3.2 1B", "ollama", "Ultra lightweight", true),
+            new ModelInfo("ollama/llama3.2:3b", "Llama 3.2 3B", "ollama", "Lightweight", true),
+            new ModelInfo("ollama/llama3.1:8b", "Llama 3.1 8B", "ollama", "Fast & capable", true),
+            new ModelInfo("ollama/llama3.1:70b", "Llama 3.1 70B", "ollama", "Very capable", true),
+            
+            // Mistral
+            new ModelInfo("ollama/mistral:7b", "Mistral 7B", "ollama", "Powerful open model", true),
+            new ModelInfo("ollama/mixtral:8x7b", "Mixtral 8x7B", "ollama", "MoE model", true),
+            
+            // Qwen (Alibaba)
+            new ModelInfo("ollama/qwen2.5:0.5b", "Qwen 2.5 0.5B", "ollama", "Ultra-fast", true),
+            new ModelInfo("ollama/qwen2.5:1.5b", "Qwen 2.5 1.5B", "ollama", "Lightweight", true),
+            new ModelInfo("ollama/qwen2.5:7b", "Qwen 2.5 7B", "ollama", "Balanced", true),
+            new ModelInfo("ollama/qwen2.5-coder:7b", "Qwen 2.5 Coder 7B", "ollama", "Code specialist", true),
+            
+            // Phi (Microsoft)
+            new ModelInfo("ollama/phi4:14b", "Phi-4 14B", "ollama", "Microsoft latest", true),
+            new ModelInfo("ollama/phi3:3.8b", "Phi-3 Mini 3.8B", "ollama", "Small but capable", true),
+            
+            // DeepSeek
+            new ModelInfo("ollama/deepseek-r1:7b", "DeepSeek R1 7B", "ollama", "Reasoning model", true),
+            new ModelInfo("ollama/deepseek-coder-v2:16b", "DeepSeek Coder V2", "ollama", "Code specialist", true),
+            
+            // Coding models
+            new ModelInfo("ollama/codellama:7b", "CodeLlama 7B", "ollama", "Meta code model", true),
+            new ModelInfo("ollama/codellama:13b", "CodeLlama 13B", "ollama", "Better coding", true),
+            
+            // Vision models
+            new ModelInfo("ollama/llava:7b", "LLaVA 7B", "ollama", "Vision model", true),
+            new ModelInfo("ollama/moondream:1.8b", "Moondream 1.8B", "ollama", "Tiny vision model", true)
+        );
     }
 }

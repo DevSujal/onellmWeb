@@ -3,6 +3,7 @@ package io.onellm.providers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 import java.util.*;
@@ -119,5 +120,44 @@ public class OpenAIProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected String getModelsEndpoint() {
+        return baseUrl + "/models";
+    }
+    
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        // Dynamically fetch models from OpenAI
+        return fetchDynamicModels();
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            // GPT-4o family
+            new ModelInfo("openai/gpt-4o", "GPT-4o", "openai", "Flagship multimodal"),
+            new ModelInfo("openai/gpt-4o-2024-11-20", "GPT-4o (Nov 2024)", "openai", "Latest GPT-4o"),
+            new ModelInfo("openai/gpt-4o-mini", "GPT-4o Mini", "openai", "Fast & affordable"),
+            new ModelInfo("openai/chatgpt-4o-latest", "ChatGPT-4o Latest", "openai", "ChatGPT version"),
+            
+            // GPT-4 family
+            new ModelInfo("openai/gpt-4-turbo", "GPT-4 Turbo", "openai", "Latest GPT-4"),
+            new ModelInfo("openai/gpt-4-turbo-preview", "GPT-4 Turbo Preview", "openai", "Preview version"),
+            new ModelInfo("openai/gpt-4", "GPT-4", "openai", "Original GPT-4"),
+            new ModelInfo("openai/gpt-4-vision-preview", "GPT-4 Vision", "openai", "Vision capable"),
+            
+            // GPT-3.5 family
+            new ModelInfo("openai/gpt-3.5-turbo", "GPT-3.5 Turbo", "openai", "Fast & cheap"),
+            new ModelInfo("openai/gpt-3.5-turbo-0125", "GPT-3.5 Turbo 0125", "openai", "Latest 3.5"),
+            new ModelInfo("openai/gpt-3.5-turbo-16k", "GPT-3.5 Turbo 16K", "openai", "Extended context"),
+            
+            // O-series reasoning models
+            new ModelInfo("openai/o1", "O1", "openai", "Advanced reasoning"),
+            new ModelInfo("openai/o1-preview", "O1 Preview", "openai", "Reasoning preview"),
+            new ModelInfo("openai/o1-mini", "O1 Mini", "openai", "Fast reasoning"),
+            new ModelInfo("openai/o3-mini", "O3 Mini", "openai", "Latest reasoning")
+        );
     }
 }

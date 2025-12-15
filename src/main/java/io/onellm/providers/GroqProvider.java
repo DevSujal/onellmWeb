@@ -3,6 +3,7 @@ package io.onellm.providers;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import io.onellm.core.*;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 import java.util.*;
@@ -120,5 +121,43 @@ public class GroqProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected String getModelsEndpoint() {
+        return baseUrl + "/models";
+    }
+    
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        return fetchDynamicModels();
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            // Llama models
+            new ModelInfo("groq/llama-3.3-70b-versatile", "Llama 3.3 70B", "groq", "Latest Llama"),
+            new ModelInfo("groq/llama-3.3-70b-specdec", "Llama 3.3 70B SpecDec", "groq", "Speculative decoding"),
+            new ModelInfo("groq/llama-3.2-90b-vision-preview", "Llama 3.2 90B Vision", "groq", "Large vision"),
+            new ModelInfo("groq/llama-3.2-11b-vision-preview", "Llama 3.2 11B Vision", "groq", "Vision model"),
+            new ModelInfo("groq/llama-3.2-3b-preview", "Llama 3.2 3B", "groq", "Lightweight"),
+            new ModelInfo("groq/llama-3.2-1b-preview", "Llama 3.2 1B", "groq", "Ultra-light"),
+            new ModelInfo("groq/llama-3.1-70b-versatile", "Llama 3.1 70B", "groq", "Very capable"),
+            new ModelInfo("groq/llama-3.1-8b-instant", "Llama 3.1 8B", "groq", "Fast"),
+            new ModelInfo("groq/llama3-70b-8192", "Llama 3 70B", "groq", "Powerful"),
+            new ModelInfo("groq/llama3-8b-8192", "Llama 3 8B", "groq", "Quick"),
+            
+            // Mixtral
+            new ModelInfo("groq/mixtral-8x7b-32768", "Mixtral 8x7B", "groq", "MoE model"),
+            
+            // Gemma
+            new ModelInfo("groq/gemma2-9b-it", "Gemma 2 9B", "groq", "Google model"),
+            new ModelInfo("groq/gemma-7b-it", "Gemma 7B", "groq", "Google efficient"),
+            
+            // Whisper
+            new ModelInfo("groq/whisper-large-v3", "Whisper Large V3", "groq", "Speech-to-text"),
+            new ModelInfo("groq/whisper-large-v3-turbo", "Whisper Large V3 Turbo", "groq", "Fast transcription")
+        );
     }
 }

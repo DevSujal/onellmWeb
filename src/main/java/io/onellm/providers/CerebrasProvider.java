@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import io.onellm.core.LLMRequest;
 import io.onellm.core.LLMResponse;
 import io.onellm.core.Usage;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 /**
@@ -126,5 +127,26 @@ public class CerebrasProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected String getModelsEndpoint() {
+        return baseUrl + "/models";
+    }
+    
+    @Override
+    public List<ModelInfo> getAvailableModels() {
+        return fetchDynamicModels();
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            new ModelInfo("cerebras/llama3.1-8b", "Llama 3.1 8B", "cerebras", "Fast inference"),
+            new ModelInfo("cerebras/llama3.1-70b", "Llama 3.1 70B", "cerebras", "Very capable"),
+            new ModelInfo("cerebras/llama-3.3-70b", "Llama 3.3 70B", "cerebras", "Latest Llama"),
+            new ModelInfo("cerebras/qwen3-32b", "Qwen3 32B", "cerebras", "Alibaba model"),
+            new ModelInfo("cerebras/qwen-coder", "Qwen Coder", "cerebras", "Code specialist")
+        );
     }
 }

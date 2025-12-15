@@ -13,6 +13,7 @@ import io.onellm.core.LLMRequest;
 import io.onellm.core.LLMResponse;
 import io.onellm.core.Message;
 import io.onellm.core.Usage;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 
 /**
@@ -153,5 +154,28 @@ public class AnthropicProvider extends BaseProvider {
             }
         }
         return null;
+    }
+    
+    @Override
+    protected List<ModelInfo> getStaticModels() {
+        return Arrays.asList(
+            // Claude 3.5 family
+            new ModelInfo("anthropic/claude-3-5-sonnet-latest", "Claude 3.5 Sonnet", "anthropic", "Best balance"),
+            new ModelInfo("anthropic/claude-3-5-sonnet-20241022", "Claude 3.5 Sonnet (Oct 2024)", "anthropic", "Latest Sonnet"),
+            new ModelInfo("anthropic/claude-3-5-sonnet-20240620", "Claude 3.5 Sonnet (Jun 2024)", "anthropic", "Original 3.5"),
+            new ModelInfo("anthropic/claude-3-5-haiku-latest", "Claude 3.5 Haiku", "anthropic", "Fast & smart"),
+            new ModelInfo("anthropic/claude-3-5-haiku-20241022", "Claude 3.5 Haiku (Oct 2024)", "anthropic", "Latest Haiku"),
+            
+            // Claude 3 family
+            new ModelInfo("anthropic/claude-3-opus-latest", "Claude 3 Opus", "anthropic", "Most capable"),
+            new ModelInfo("anthropic/claude-3-opus-20240229", "Claude 3 Opus (Feb 2024)", "anthropic", "Original Opus"),
+            new ModelInfo("anthropic/claude-3-sonnet-20240229", "Claude 3 Sonnet", "anthropic", "Balanced"),
+            new ModelInfo("anthropic/claude-3-haiku-20240307", "Claude 3 Haiku", "anthropic", "Fastest"),
+            
+            // Legacy Claude
+            new ModelInfo("anthropic/claude-2.1", "Claude 2.1", "anthropic", "200K context"),
+            new ModelInfo("anthropic/claude-2.0", "Claude 2.0", "anthropic", "Previous gen"),
+            new ModelInfo("anthropic/claude-instant-1.2", "Claude Instant 1.2", "anthropic", "Legacy fast")
+        );
     }
 }

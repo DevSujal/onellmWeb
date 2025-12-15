@@ -1,5 +1,6 @@
 package io.onellm.core;
 
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.LLMException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,4 +62,12 @@ public interface LLMProvider {
     default boolean supportsStreaming() {
         return true;
     }
+    
+    /**
+     * Gets available models from this provider.
+     * Providers should override this to return dynamic lists when possible.
+     *
+     * @return List of available models
+     */
+    List<ModelInfo> getAvailableModels();
 }

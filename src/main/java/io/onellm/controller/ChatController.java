@@ -7,6 +7,7 @@ import io.onellm.core.Message;
 import io.onellm.dto.ChatCompletionRequest;
 import io.onellm.dto.ChatCompletionResponse;
 import io.onellm.dto.MessageDTO;
+import io.onellm.dto.ModelInfo;
 import io.onellm.service.ProviderFactory;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -153,6 +154,76 @@ public class ChatController {
         Map<String, Object> response = new HashMap<>();
         response.put("providers", providers);
         response.put("count", providers.size());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Get all available models from all providers (static lists).
+     * GET /api/models
+     */
+    @GetMapping("/models")
+    public ResponseEntity<Map<String, Object>> listAllModels() {
+        logger.info("Fetching all available models (static)");
+        
+        List<ModelInfo> models = providerFactory.getAllStaticModels();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("models", models);
+        response.put("count", models.size());
+        response.put("object", "list");
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Get models for a specific provider.
+     * GET /api/models/{provider}?apiKey=xxx&baseUrl=xxx
+     * 
+     * If apiKey is provided, will attempt to fetch dynamic models.
+     * Otherwise, returns static list.
+     */
+    @GetMapping("/models/{provider}")
+    public ResponseEntity<Map<String, Object>> listProviderModels(
+            @PathVariable String provider,
+            @RequestParam(required = false) String apiKey,
+            @RequestParam(required = false) String baseUrl) {
+        
+        logger.info("Fetching models for provider: {}", provider);
+        
+        List<ModelInfo> models = providerFactory.getModelsForProvider(provider, apiKey, baseUrl);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("provider", provider);
+        response.put("models", models);
+        response.put("count", models.size());
+        response.put("dynamic", apiKey != null && !apiKey.isEmpty());
+        response.put("object", "list");
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Get models from multiple providers with API keys for dynamic fetching.
+     * POST /api/models
+     * 
+     * Request body: { "providers": { "openai": "sk-xxx", "groq": "gsk-xxx" } }
+     */
+    @PostMapping("/models")
+    public ResponseEntity<Map<String, Object>> listModelsWithKeys(
+            @RequestBody Map<String, Object> request) {
+        
+        logger.info("Fetching models with API keys");
+        
+        @SuppressWarnings("unchecked")
+        Map<String, String> providerApiKeys = (Map<String, String>) request.getOrDefault("providers", new HashMap<>());
+        
+        List<ModelInfo> models = providerFactory.getModelsWithApiKeys(providerApiKeys);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("models", models);
+        response.put("count", models.size());
+        response.put("object", "list");
         
         return ResponseEntity.ok(response);
     }

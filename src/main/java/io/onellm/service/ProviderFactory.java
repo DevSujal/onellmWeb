@@ -1,5 +1,6 @@
 package io.onellm.service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import io.onellm.core.LLMProvider;
+import io.onellm.dto.ModelInfo;
 import io.onellm.exception.ModelNotFoundException;
 import io.onellm.providers.AnthropicProvider;
 import io.onellm.providers.AzureOpenAIProvider;
@@ -155,5 +157,109 @@ public class ProviderFactory {
             "openai", "anthropic", "google", "azure", "groq", 
             "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface", "freellm"
         );
+    }
+    
+    /**
+     * Gets available models for a specific provider.
+     * For providers that support dynamic fetching (OpenAI, Groq, etc.), 
+     * this will fetch the latest models if an API key is provided.
+     *
+     * @param providerName The provider name
+     * @param apiKey Optional API key for dynamic fetching
+     * @param baseUrl Optional custom base URL
+     * @return List of available models for the provider
+     */
+    public List<ModelInfo> getModelsForProvider(String providerName, String apiKey, String baseUrl) {
+        try {
+            LLMProvider provider = createProviderForModels(providerName, apiKey, baseUrl);
+            return provider.getAvailableModels();
+        } catch (Exception e) {
+            logger.warn("Failed to get models for provider {}: {}", providerName, e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Gets all available models from all providers.
+     * Uses static lists for all providers (no API key required).
+     *
+     * @return List of all available models
+     */
+    public List<ModelInfo> getAllStaticModels() {
+        List<ModelInfo> allModels = new ArrayList<>();
+        
+        for (String providerName : getSupportedProviders()) {
+            try {
+                LLMProvider provider = createProviderForModels(providerName, null, null);
+                allModels.addAll(provider.getAvailableModels());
+            } catch (Exception e) {
+                logger.debug("Skipping provider {} for static models: {}", providerName, e.getMessage());
+            }
+        }
+        
+        return allModels;
+    }
+    
+    /**
+     * Gets models from multiple providers with API keys for dynamic fetching.
+     *
+     * @param providerApiKeys Map of provider name to API key
+     * @return List of all available models
+     */
+    public List<ModelInfo> getModelsWithApiKeys(Map<String, String> providerApiKeys) {
+        List<ModelInfo> allModels = new ArrayList<>();
+        
+        for (String providerName : getSupportedProviders()) {
+            try {
+                String apiKey = providerApiKeys.get(providerName);
+                LLMProvider provider = createProviderForModels(providerName, apiKey, null);
+                allModels.addAll(provider.getAvailableModels());
+            } catch (Exception e) {
+                logger.debug("Failed to get models for provider {}: {}", providerName, e.getMessage());
+            }
+        }
+        
+        return allModels;
+    }
+    
+    /**
+     * Creates a provider instance for fetching models.
+     * Uses dummy/empty credentials when not provided.
+     */
+    private LLMProvider createProviderForModels(String providerName, String apiKey, String baseUrl) {
+        // For providers that don't require API key
+        if ("ollama".equals(providerName)) {
+            return baseUrl != null && !baseUrl.isEmpty() 
+                    ? new OllamaProvider(baseUrl) 
+                    : new OllamaProvider();
+        }
+        if ("freellm".equals(providerName)) {
+            return baseUrl != null && !baseUrl.isEmpty() 
+                    ? new FreeLLMProvider(baseUrl) 
+                    : new FreeLLMProvider();
+        }
+        
+        // For providers that require API key, use provided or dummy key
+        String effectiveApiKey = apiKey != null && !apiKey.isEmpty() ? apiKey : "dummy-key-for-static-models";
+        
+        return switch (providerName) {
+            case "openai" -> baseUrl != null && !baseUrl.isEmpty() 
+                    ? new OpenAIProvider(effectiveApiKey, baseUrl) 
+                    : new OpenAIProvider(effectiveApiKey);
+            case "anthropic" -> new AnthropicProvider(effectiveApiKey);
+            case "google" -> baseUrl != null && !baseUrl.isEmpty()
+                    ? new GoogleProvider(effectiveApiKey, baseUrl)
+                    : new GoogleProvider(effectiveApiKey);
+            case "azure" -> new AzureOpenAIProvider(effectiveApiKey, "dummy-resource", "dummy-deployment");
+            case "groq" -> new GroqProvider(effectiveApiKey);
+            case "cerebras" -> new CerebrasProvider(effectiveApiKey);
+            case "openrouter" -> new OpenRouterProvider(effectiveApiKey);
+            case "xai" -> new XAIProvider(effectiveApiKey);
+            case "copilot" -> new CopilotProvider(effectiveApiKey);
+            case "huggingface" -> baseUrl != null && !baseUrl.isEmpty()
+                    ? new HuggingFaceProvider(effectiveApiKey, baseUrl)
+                    : new HuggingFaceProvider(effectiveApiKey);
+            default -> throw new ModelNotFoundException("Unknown provider: " + providerName);
+        };
     }
 }
