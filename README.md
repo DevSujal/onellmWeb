@@ -33,9 +33,10 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🔌 **12 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, GitHub Copilot, Hugging Face, and **FreeLLM** (Free!) |
+| 🔌 **13 Providers** | OpenAI, Anthropic, Google Gemini, Azure OpenAI, Groq, Cerebras, Ollama, OpenRouter, xAI, GitHub Copilot, GitHub Models, Hugging Face, and **FreeLLM** (Free!) |
 | 🔑 **BYOK Model** | Users provide their own API keys — no server-side credential storage |
 | 🎯 **Auto-Routing** | Automatically routes requests based on model name |
+| 🔍 **Web Search** | Real-time web search for current information (set `search: true`) |
 | 🌊 **Streaming** | Full support for streaming responses via SSE |
 | ⚡ **Async** | Non-blocking async completions with `CompletableFuture` |
 | 🛡️ **Type-Safe** | Builder pattern with validation for all request parameters |
@@ -95,6 +96,7 @@ OneLLM supports **10 LLM providers** out of the box:
 | **OpenRouter** | 100+ models | `apiKey`, optionally `openRouterSiteName`, `openRouterSiteUrl` |
 | **xAI** | `grok-*` models | `apiKey` |
 | **GitHub Copilot** | Copilot models | `apiKey` |
+| **GitHub Models** | `github/gpt-4o`, `github/Llama-3.3-70B`, Mistral, Phi, DeepSeek | `apiKey` (GitHub PAT) |
 | **Hugging Face** | `meta-llama/*`, `mistralai/*`, `Qwen/*`, any HF model | `apiKey` (hf_token) |
 | **FreeLLM** 🆓 | `TinyLlama/*`, `Qwen/*` | None (free!) |
 
@@ -200,6 +202,15 @@ Send a chat completion request with your own API key.
 | `azureDeploymentName` | `string` | Azure | Your Azure deployment name |
 | `openRouterSiteName` | `string` | Optional | Your app name (for OpenRouter) |
 | `openRouterSiteUrl` | `string` | Optional | Your app URL (for OpenRouter) |
+
+**Web Search Fields (Real-Time Data):**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `search` | `boolean` | ❌ No | Enable web search for real-time data (default: `false`) |
+| `searchResultCount` | `integer` | ❌ No | Number of search results to inject (default: `3`) |
+| `searchLanguage` | `string` | ❌ No | Language code for search (e.g., `en`) |
+| `searchCountry` | `string` | ❌ No | Country code for search (e.g., `US`) |
 
 **Response:**
 
@@ -380,6 +391,22 @@ curl -X POST http://localhost:8080/api/chat/completions \
   }'
 ```
 
+### GitHub Models
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "github_pat_your-token",
+    "model": "github/gpt-4o",
+    "messages": [
+      {"role": "user", "content": "Hello from GitHub Models!"}
+    ]
+  }'
+```
+
+> **Note**: Use your GitHub Personal Access Token (PAT) as the API key. GitHub Models provides access to GPT-4o, Llama, Mistral, Phi, and other models.
+
 ### Ollama (Free Hosted Models) 🆓
 
 Ollama is hosted on Hugging Face Spaces - **no local installation required!**
@@ -432,6 +459,38 @@ curl -X POST http://localhost:8080/api/chat/completions \
     "maxTokens": 500
   }'
 ```
+
+### 🔍 Web Search (Real-Time Data)
+
+Enable real-time web search to give LLMs access to current information:
+
+```bash
+curl -X POST http://localhost:8080/api/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "apiKey": "sk-your-openai-key",
+    "model": "gpt-4o",
+    "search": true,
+    "searchResultCount": 3,
+    "messages": [
+      {"role": "user", "content": "Who won the 2024 US presidential election?"}
+    ]
+  }'
+```
+
+> **How it works**: When `search: true` is set, OneLLM:
+> 1. Extracts the user's question
+> 2. Searches the web for relevant, current information
+> 3. Injects the search results as context for the LLM
+> 4. Returns a response with up-to-date data
+
+**Search Parameters:**
+| Parameter | Description |
+|-----------|-------------|
+| `search` | Enable web search (`true`/`false`) |
+| `searchResultCount` | Number of results (default: 3) |
+| `searchLanguage` | Language code (e.g., `en`) |
+| `searchCountry` | Country code (e.g., `US`) |
 
 ### Streaming Example
 

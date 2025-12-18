@@ -37,6 +37,12 @@ public class ChatCompletionRequest {
     private String openRouterSiteName;  // Optional for OpenRouter
     private String openRouterSiteUrl;  // Optional for OpenRouter
     
+    // Web search options for real-time data
+    private Boolean search;              // Enable web search (default: false)
+    private Integer searchResultCount;   // Number of search results (default: 3)
+    private String searchLanguage;       // Language code (e.g., "en")
+    private String searchCountry;        // Country code (e.g., "US")
+    
     // Getters and Setters
     public String getModel() { return model; }
     public void setModel(String model) { this.model = model; }
@@ -82,4 +88,17 @@ public class ChatCompletionRequest {
     
     public String getOpenRouterSiteUrl() { return openRouterSiteUrl; }
     public void setOpenRouterSiteUrl(String openRouterSiteUrl) { this.openRouterSiteUrl = openRouterSiteUrl; }
+    
+    // Web search getters and setters
+    public Boolean getSearch() { return search; }
+    public void setSearch(Boolean search) { this.search = search; }
+    
+    public Integer getSearchResultCount() { return searchResultCount; }
+    public void setSearchResultCount(Integer searchResultCount) { this.searchResultCount = searchResultCount; }
+    
+    public String getSearchLanguage() { return searchLanguage; }
+    public void setSearchLanguage(String searchLanguage) { this.searchLanguage = searchLanguage; }
+    
+    public String getSearchCountry() { return searchCountry; }
+    public void setSearchCountry(String searchCountry) { this.searchCountry = searchCountry; }
 }

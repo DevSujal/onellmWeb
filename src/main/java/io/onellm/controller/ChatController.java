@@ -8,7 +8,9 @@ import io.onellm.dto.ChatCompletionRequest;
 import io.onellm.dto.ChatCompletionResponse;
 import io.onellm.dto.MessageDTO;
 import io.onellm.dto.ModelInfo;
+import io.onellm.dto.SearchResult;
 import io.onellm.service.ProviderFactory;
+import io.onellm.service.WebSearchService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +41,12 @@ public class ChatController {
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
     
     private final ProviderFactory providerFactory;
+    private final WebSearchService webSearchService;
     private final ExecutorService streamExecutor = Executors.newCachedThreadPool();
     
-    public ChatController(ProviderFactory providerFactory) {
+    public ChatController(ProviderFactory providerFactory, WebSearchService webSearchService) {
         this.providerFactory = providerFactory;
+        this.webSearchService = webSearchService;
     }
     
     /**
@@ -243,12 +248,43 @@ public class ChatController {
     
     /**
      * Builds an LLMRequest from the REST DTO.
+     * If search is enabled, performs web search and injects context.
      */
     private LLMRequest buildLLMRequest(ChatCompletionRequest request) {
         LLMRequest.Builder builder = LLMRequest.builder()
                 .model(request.getModel());
         
-        // Add messages
+        // Check if web search is enabled
+        boolean searchEnabled = Boolean.TRUE.equals(request.getSearch());
+        String searchContext = null;
+        
+        if (searchEnabled) {
+            // Extract the last user message as search query
+            String searchQuery = extractSearchQuery(request.getMessages());
+            
+            if (searchQuery != null && !searchQuery.isEmpty()) {
+                logger.info("Web search enabled, searching for: {}", searchQuery);
+                
+                List<SearchResult> searchResults = webSearchService.search(
+                        searchQuery,
+                        request.getSearchResultCount(),
+                        request.getSearchLanguage(),
+                        request.getSearchCountry()
+                );
+                
+                if (!searchResults.isEmpty()) {
+                    searchContext = webSearchService.formatResultsAsContext(searchResults);
+                    logger.info("Injecting {} search results as context", searchResults.size());
+                }
+            }
+        }
+        
+        // If we have search context, add it as a system message first
+        if (searchContext != null && !searchContext.isEmpty()) {
+            builder.addMessage(Message.system(searchContext));
+        }
+        
+        // Add original messages
         for (MessageDTO msg : request.getMessages()) {
             builder.addMessage(new Message(msg.getRole(), msg.getContent()));
         }
@@ -277,5 +313,24 @@ public class ChatController {
         }
         
         return builder.build();
+    }
+    
+    /**
+     * Extracts the search query from messages (last user message).
+     */
+    private String extractSearchQuery(List<MessageDTO> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        
+        // Find the last user message
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            MessageDTO msg = messages.get(i);
+            if ("user".equalsIgnoreCase(msg.getRole()) && msg.getContent() != null) {
+                return msg.getContent();
+            }
+        }
+        
+        return null;
     }
 }
