@@ -175,7 +175,8 @@ public class WebSearchService {
         }
         
         context.append("Use the above information to provide an accurate and up-to-date response. ");
-        context.append("Cite sources when appropriate.");
+        context.append("Do NOT include citation markers like 【1†...】 or similar notation in your response. ");
+        context.append("Instead, naturally reference sources if needed (e.g., 'According to Wikipedia...').");
         
         return context.toString();
     }
