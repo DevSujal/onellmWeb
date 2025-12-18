@@ -16,6 +16,7 @@ import io.onellm.providers.AnthropicProvider;
 import io.onellm.providers.AzureOpenAIProvider;
 import io.onellm.providers.CerebrasProvider;
 import io.onellm.providers.CopilotProvider;
+import io.onellm.providers.GitHubModelsProvider;
 import io.onellm.providers.GoogleProvider;
 import io.onellm.providers.GroqProvider;
 import io.onellm.providers.FreeLLMProvider;
@@ -43,7 +44,8 @@ public class ProviderFactory {
         Map.entry("cerebras", Arrays.asList("cerebras", "llama3.1-8b", "llama3.1-70b", "llama-3.3-70b", "gpt-oss")),
         Map.entry("ollama", Arrays.asList("ollama/", "llama2", "codellama", "phi")),
         Map.entry("xai", Arrays.asList("grok")),
-        Map.entry("copilot", Arrays.asList("copilot")),
+        Map.entry("copilot", Arrays.asList("copilot/")),
+        Map.entry("github", Arrays.asList("github/", "ghmodels/")),
         Map.entry("huggingface", Arrays.asList("huggingface/", "hf/", "meta-llama/", "mistralai/", "microsoft/phi", "Qwen/")),
         Map.entry("freellm", Arrays.asList("freellm/", "free/", "TinyLlama/"))
     );
@@ -104,6 +106,9 @@ public class ProviderFactory {
                     : new OpenRouterProvider(apiKey);
             case "xai" -> new XAIProvider(apiKey);
             case "copilot" -> new CopilotProvider(apiKey);
+            case "github" -> baseUrl != null && !baseUrl.isEmpty()
+                    ? new GitHubModelsProvider(apiKey, baseUrl)
+                    : new GitHubModelsProvider(apiKey);
             case "huggingface" -> baseUrl != null && !baseUrl.isEmpty()
                     ? new HuggingFaceProvider(apiKey, baseUrl)
                     : new HuggingFaceProvider(apiKey);
@@ -155,7 +160,7 @@ public class ProviderFactory {
     public List<String> getSupportedProviders() {
         return Arrays.asList(
             "openai", "anthropic", "google", "azure", "groq", 
-            "cerebras", "ollama", "openrouter", "xai", "copilot", "huggingface", "freellm"
+            "cerebras", "ollama", "openrouter", "xai", "copilot", "github", "huggingface", "freellm"
         );
     }
     
@@ -256,6 +261,9 @@ public class ProviderFactory {
             case "openrouter" -> new OpenRouterProvider(effectiveApiKey);
             case "xai" -> new XAIProvider(effectiveApiKey);
             case "copilot" -> new CopilotProvider(effectiveApiKey);
+            case "github" -> baseUrl != null && !baseUrl.isEmpty()
+                    ? new GitHubModelsProvider(effectiveApiKey, baseUrl)
+                    : new GitHubModelsProvider(effectiveApiKey);
             case "huggingface" -> baseUrl != null && !baseUrl.isEmpty()
                     ? new HuggingFaceProvider(effectiveApiKey, baseUrl)
                     : new HuggingFaceProvider(effectiveApiKey);

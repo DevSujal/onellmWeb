@@ -16,7 +16,7 @@ public class CopilotProvider extends BaseProvider {
     
     private static final String DEFAULT_BASE_URL = "https://api.githubcopilot.com";
     private static final List<String> MODEL_PREFIXES = Arrays.asList(
-            "copilot/", "github/"
+            "copilot/"
     );
     
     public CopilotProvider(String apiKey) {
@@ -57,12 +57,10 @@ public class CopilotProvider extends BaseProvider {
     protected Map<String, Object> buildRequestBody(LLMRequest request) {
         Map<String, Object> body = new HashMap<>();
         
-        // Remove copilot/ or github/ prefix if present
+        // Remove copilot/ prefix if present
         String model = request.getModel();
         if (model.toLowerCase().startsWith("copilot/")) {
             model = model.substring(8);
-        } else if (model.toLowerCase().startsWith("github/")) {
-            model = model.substring(7);
         }
         
         // Default model for Copilot
