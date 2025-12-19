@@ -218,6 +218,18 @@ public class HuggingFaceProvider extends BaseProvider {
     @Override
     protected List<ModelInfo> getStaticModels() {
         return Arrays.asList(
+            // Free PublicAI models ($0.00 pricing)
+            new ModelInfo("huggingface/aisingapore/Gemma-SEA-LION-v4-27B-IT:publicai", "Gemma SEA-LION v4 27B", "huggingface", "Free - AI Singapore", true),
+            new ModelInfo("huggingface/aisingapore/Qwen-SEA-LION-v4-32B-IT:publicai", "Qwen SEA-LION v4 32B", "huggingface", "Free - AI Singapore", true),
+            new ModelInfo("huggingface/allenai/Olmo-3-7B-Instruct:publicai", "OLMo 3 7B Instruct", "huggingface", "Free - Allen AI", true),
+            new ModelInfo("huggingface/allenai/Olmo-3-7B-Think:publicai", "OLMo 3 7B Think", "huggingface", "Free - Allen AI Thinking", true),
+            new ModelInfo("huggingface/allenai/Olmo-3.1-32B-Instruct:publicai", "OLMo 3.1 32B Instruct", "huggingface", "Free - Allen AI", true),
+            new ModelInfo("huggingface/allenai/Olmo-3.1-32B-Think:publicai", "OLMo 3.1 32B Think", "huggingface", "Free - Allen AI Thinking", true),
+            new ModelInfo("huggingface/dicta-il/DictaLM-3.0-24B-Thinking:publicai", "DictaLM 3.0 24B", "huggingface", "Free - Hebrew Thinking", true),
+            new ModelInfo("huggingface/swiss-ai/Apertus-70B-Instruct-2509:publicai", "Apertus 70B Instruct", "huggingface", "Free - Swiss AI", true),
+            new ModelInfo("huggingface/swiss-ai/Apertus-8B-Instruct-2509:publicai", "Apertus 8B Instruct", "huggingface", "Free - Swiss AI", true),
+            new ModelInfo("huggingface/utter-project/EuroLLM-22B-Instruct-2512:publicai", "EuroLLM 22B Instruct", "huggingface", "Free - EU Multilingual", true),
+            new ModelInfo("huggingface/ServiceNow-AI/Apriel-1.6-15b-Thinker:together", "Apriel 1.6 15B Thinker", "huggingface", "Free - ServiceNow AI", true),
             // Meta Llama
             new ModelInfo("huggingface/meta-llama/Llama-3.3-70B-Instruct", "Llama 3.3 70B", "huggingface", "Meta latest"),
             new ModelInfo("huggingface/meta-llama/Llama-3.1-70B-Instruct", "Llama 3.1 70B", "huggingface", "Very capable"),
@@ -243,19 +255,8 @@ public class HuggingFaceProvider extends BaseProvider {
             
             // RWKV
             new ModelInfo("hf/rwkv7-g1a4-2.9b-20251118-ctx8192", "RWKV7 2.9B", "huggingface", "Standard chat", true),
-            new ModelInfo("hf/rwkv7-g1a4-2.9b-20251118-ctx8192:thinking", "RWKV7 2.9B Thinking", "huggingface", "Chain-of-thought", true),
-            
-            // Free PublicAI models ($0.00 pricing)
-            new ModelInfo("huggingface/aisingapore/Gemma-SEA-LION-v4-27B-IT:publicai", "Gemma SEA-LION v4 27B", "huggingface", "Free - AI Singapore", true),
-            new ModelInfo("huggingface/aisingapore/Qwen-SEA-LION-v4-32B-IT:publicai", "Qwen SEA-LION v4 32B", "huggingface", "Free - AI Singapore", true),
-            new ModelInfo("huggingface/allenai/Olmo-3-7B-Instruct:publicai", "OLMo 3 7B Instruct", "huggingface", "Free - Allen AI", true),
-            new ModelInfo("huggingface/allenai/Olmo-3-7B-Think:publicai", "OLMo 3 7B Think", "huggingface", "Free - Allen AI Thinking", true),
-            new ModelInfo("huggingface/allenai/Olmo-3.1-32B-Instruct:publicai", "OLMo 3.1 32B Instruct", "huggingface", "Free - Allen AI", true),
-            new ModelInfo("huggingface/allenai/Olmo-3.1-32B-Think:publicai", "OLMo 3.1 32B Think", "huggingface", "Free - Allen AI Thinking", true),
-            new ModelInfo("huggingface/dicta-il/DictaLM-3.0-24B-Thinking:publicai", "DictaLM 3.0 24B", "huggingface", "Free - Hebrew Thinking", true),
-            new ModelInfo("huggingface/swiss-ai/Apertus-70B-Instruct-2509:publicai", "Apertus 70B Instruct", "huggingface", "Free - Swiss AI", true),
-            new ModelInfo("huggingface/swiss-ai/Apertus-8B-Instruct-2509:publicai", "Apertus 8B Instruct", "huggingface", "Free - Swiss AI", true),
-            new ModelInfo("huggingface/utter-project/EuroLLM-22B-Instruct-2512:publicai", "EuroLLM 22B Instruct", "huggingface", "Free - EU Multilingual", true)
+            new ModelInfo("hf/rwkv7-g1a4-2.9b-20251118-ctx8192:thinking", "RWKV7 2.9B Thinking", "huggingface", "Chain-of-thought", true)
+
         );
     }
 }
